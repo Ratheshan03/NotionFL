@@ -1,0 +1,7 @@
+num_clients: 4
+epochs: 10
+batch_size: 64
+learning_rate: 0.01
+device: cpu # or 'cpu' if you're not using a GPU
+fl_rounds: 2
+eval_every_n_rounds: 1

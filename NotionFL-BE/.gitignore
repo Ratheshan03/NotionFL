@@ -1,0 +1,29 @@
+.env
+__pycache__
+*.pyc
+/output
+*.pth
+/data
+
+# Ignore compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignore dependency directories
+/node_modules
+/vendor
+
+# Ignore IDE and editor files
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.bak

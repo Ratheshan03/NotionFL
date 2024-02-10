@@ -5,3 +5,5 @@ learning_rate: 0.01
 device: cpu # or 'cpu' if you're not using a GPU
 fl_rounds: 1
 eval_every_n_rounds: 1
+clip_threshold: 1.0  # The maximum allowable L2 norm of the gradients
+noise_multiplier: 0.1  # The amount of noise to add

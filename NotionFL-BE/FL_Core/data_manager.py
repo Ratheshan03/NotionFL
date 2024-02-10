@@ -44,3 +44,5 @@ def create_client_data_loaders(client_datasets, batch_size=64):
     client_loaders = [DataLoader(dataset, batch_size=batch_size, shuffle=True) for dataset in client_datasets]
 
     return client_loaders
+
+# Evalauation loader?

@@ -1,5 +1,6 @@
 # FL_Core/client.py
 
+import json
 import torch
 from .training import train_model, evaluate_model
 
@@ -12,14 +13,18 @@ class FLClient:
         self.device = device
 
     def train(self, epochs, lr):
-        print(f"Training client {self.client_id} model...")
+        print(f"\nTraining client {self.client_id} model...")
         self.model = train_model(self.model, self.train_loader, epochs, lr, self.device)
         return self.model.state_dict()
 
     def evaluate(self):
-        print(f"Evaluating client {self.client_id} model...")
-        test_loss, accuracy = evaluate_model(self.model, self.test_loader, self.device)
-        return test_loss, accuracy
+        print(f"\nEvaluating client {self.client_id} model...")
+        metrics = evaluate_model(self.model, self.test_loader, self.device)
+        test_loss, accuracy, precision, recall, f1, conf_matrix = metrics
+        print(f"Client {self.client_id} Evaluation - Loss: {test_loss}, Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}")
+        print(f"Client {self.client_id} Confusion Matrix:\n{conf_matrix}")
+        return metrics
+    
 
     def update_model(self, global_model_state_dict):
         """

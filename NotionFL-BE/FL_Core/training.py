@@ -1,6 +1,7 @@
 # FL_Core/training.py
 import torch
 from torch import nn, optim
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
 def train_model(model, train_loader, epochs, lr, device):
     model.to(device)
@@ -33,6 +34,8 @@ def evaluate_model(model, test_loader, device):
     
     test_loss = 0
     correct = 0
+    all_targets = []
+    all_predictions = []
     criterion = nn.CrossEntropyLoss(reduction='sum')
     
     with torch.no_grad():
@@ -40,13 +43,21 @@ def evaluate_model(model, test_loader, device):
             data, target = data.to(device), target.to(device)
             
             output = model(data)
-            test_loss += criterion(output, target).item()  # Sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # Get the index of the max log-probability
+            test_loss += criterion(output, target).item()
+            pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
+
+            all_targets.extend(target.view_as(pred).cpu().numpy())
+            all_predictions.extend(pred.cpu().numpy())
 
     test_loss /= len(test_loader.dataset)
     accuracy = correct / len(test_loader.dataset)
+    precision = precision_score(all_targets, all_predictions, average='weighted')
+    recall = recall_score(all_targets, all_predictions, average='weighted')
+    f1 = f1_score(all_targets, all_predictions, average='weighted')
+    conf_matrix = confusion_matrix(all_targets, all_predictions)
 
-    print(f'Test set: Average loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}')
+    print(f'Test set: Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}')
+    print(f'Confusion Matrix:\n{conf_matrix}')
     
-    return test_loss, accuracy
+    return test_loss, accuracy, precision, recall, f1, conf_matrix

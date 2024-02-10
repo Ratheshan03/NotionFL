@@ -1,6 +1,8 @@
 # FL_Core/server.py
 
+import json
 import torch
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
 class FLServer:
     def __init__(self, global_model):
@@ -36,6 +38,8 @@ class FLServer:
         
         test_loss = 0
         correct = 0
+        all_targets = []
+        all_predictions = []
         criterion = torch.nn.CrossEntropyLoss(reduction='sum')
         
         with torch.no_grad():
@@ -46,9 +50,25 @@ class FLServer:
                 pred = output.argmax(dim=1, keepdim=True)
                 correct += pred.eq(target.view_as(pred)).sum().item()
 
+                # Append actual and predicted labels for further metrics
+                all_targets.extend(target.view_as(pred).cpu().numpy())
+                all_predictions.extend(pred.cpu().numpy())
+
         test_loss /= len(test_loader.dataset)
         accuracy = correct / len(test_loader.dataset)
 
+        # Calculate additional metrics
+        precision = precision_score(all_targets, all_predictions, average='weighted')
+        recall = recall_score(all_targets, all_predictions, average='weighted')
+        f1 = f1_score(all_targets, all_predictions, average='weighted')
+        conf_matrix = confusion_matrix(all_targets, all_predictions)
+
+        # Print all metrics
         print(f'Global Model Test set: Average loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}')
+        print(f'Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}')
+        print(f'Confusion Matrix:\n{conf_matrix}')
         
-        return test_loss, accuracy
+        return test_loss, accuracy, precision, recall, f1, conf_matrix
+    
+    
+    

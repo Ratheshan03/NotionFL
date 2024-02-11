@@ -3,10 +3,17 @@
 import json
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+import copy
+import torch.nn as nn
+from models.model import MNISTModel
 
 class FLServer:
     def __init__(self, global_model):
         self.global_model = global_model
+        
+    def set_global_model_state(self, state_dict):
+        """Temporarily sets the global model to the given state_dict."""
+        self.global_model.load_state_dict(state_dict)
 
     def aggregate_client_updates(self, client_updates, aggregation_method='average'):
         """
@@ -71,4 +78,58 @@ class FLServer:
         return test_loss, accuracy, precision, recall, f1, conf_matrix
     
     
+    def evaluate_model_state(self, model_state, test_loader, device, model_template):
+        """
+        Evaluate a model state using the test data loader.
+
+        Args:
+        model_state (OrderedDict): State dictionary of the model to be evaluated.
+        test_loader (DataLoader): DataLoader for the test dataset.
+        device (torch.device): Device to perform the computation on.
+        model_template (torch.nn.Module): Template model to load the state into.
+
+        Returns:
+        float: The evaluation metric (e.g., accuracy) of the model.
+        """
+        model = copy.deepcopy(model_template)
+        model.load_state_dict(model_state)
+        model.to(device)
+        model.eval()
+
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for data, targets in test_loader:
+                data, targets = data.to(device), targets.to(device)
+                outputs = model(data)
+                _, predicted = torch.max(outputs.data, 1)
+                total += targets.size(0)
+                correct += (predicted == targets).sum().item()
+
+        accuracy = correct / total
+        return accuracy
+    
+    
+    def evaluate_model_state_dict(self, model_state_dict, test_loader, device):
+        """
+        Evaluate a model's performance given its state dictionary.
+
+        Args:
+            model_state_dict (OrderedDict): The state dictionary of the model to evaluate.
+            test_loader (DataLoader): The test dataset loader.
+            device (torch.device): The device to perform evaluation on.
+
+        Returns:
+            float: The evaluation metric (e.g., accuracy).
+        """
+        # Create a new instance of the model and load the state dict
+        temp_model = MNISTModel()
+        temp_model.load_state_dict(model_state_dict)
+        temp_model.to(device)
+        temp_model.eval()
+        
+        # Load state dict into the global model and evaluate
+        self.global_model.load_state_dict(model_state_dict)
+        self.global_model.to(device)
+        return self.evaluate_global_model(test_loader, device)
     

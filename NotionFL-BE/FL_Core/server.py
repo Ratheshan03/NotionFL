@@ -123,13 +123,66 @@ class FLServer:
             float: The evaluation metric (e.g., accuracy).
         """
         # Create a new instance of the model and load the state dict
-        temp_model = MNISTModel()
-        temp_model.load_state_dict(model_state_dict)
-        temp_model.to(device)
-        temp_model.eval()
+       
         
         # Load state dict into the global model and evaluate
         self.global_model.load_state_dict(model_state_dict)
         self.global_model.to(device)
         return self.evaluate_global_model(test_loader, device)
     
+    
+    def evaluate_model(self, model, test_loader, device):
+        """
+        Evaluate a model's performance given the model instance.
+
+        Args:
+            model (torch.nn.Module): The model to evaluate.
+            test_loader (DataLoader): The test dataset loader.
+            device (torch.device): The device to perform evaluation on.
+
+        Returns:
+            float: The evaluation metric (e.g., accuracy).
+        """
+        model.to(device)
+        model.eval()
+
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for data, targets in test_loader:
+                data, targets = data.to(device), targets.to(device)
+                outputs = model(data)
+                _, predicted = torch.max(outputs.data, 1)
+                total += targets.size(0)
+                correct += (predicted == targets).sum().item()
+
+        accuracy = correct / total
+        return accuracy
+    
+    def evaluate_models(self, models, test_loader, device):
+        """Evaluates a list of models and returns the average metric."""
+        metrics = [self.evaluate_model(model, test_loader, device) for model in models]
+        return sum(metrics) / len(metrics)
+    
+    
+    def fedavg_aggregate(self, model_states):
+        """
+        Aggregate the model states by averaging the parameters.
+
+        Args:
+            model_states (list): A list of state_dicts of the models to be averaged.
+
+        Returns:
+            OrderedDict: The averaged state_dict.
+        """
+        # Initialize a dictionary to store the aggregated weights
+        avg_weights = {}
+
+        # Iterate through each parameter
+        for key in model_states[0].keys():
+            # Sum the weights of each model for this parameter
+            sum_weights = sum([model_state[key] for model_state in model_states])
+            # Calculate the average weight
+            avg_weights[key] = sum_weights / len(model_states)
+
+        return avg_weights

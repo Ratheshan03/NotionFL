@@ -278,13 +278,16 @@ class DataCollector:
         agg_explanation_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', 'aggregation_explanation')
         os.makedirs(agg_explanation_dir, exist_ok=True)
         
+        # Convert SHAP values to lists for JSON serialization
+        pre_agg_shap_values = [shap_value.tolist() for shap_value in aggregated_explanation.get('global_pre', [])]
+        post_agg_shap_values = [shap_value.tolist() for shap_value in aggregated_explanation.get('global_post', [])]
+
         # Save the raw SHAP values data as JSON
         shap_values_path = os.path.join(agg_explanation_dir, f'shap_values_round_{round_num}.json')
         with open(shap_values_path, 'w') as file:
             json.dump({
-                'pre_agg_shap_values': aggregated_explanation.get('global_pre', []),
-                'post_agg_shap_values': aggregated_explanation.get('global_post', []),
-                'comparison_plot_path': aggregated_explanation.get('comparison_plot', [])
+                'pre_agg_shap_values': pre_agg_shap_values,
+                'post_agg_shap_values': post_agg_shap_values
             }, file, indent=4)
             
         print(f"Aggregation explanation for round {round_num} saved successfully.")

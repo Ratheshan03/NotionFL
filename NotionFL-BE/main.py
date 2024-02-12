@@ -130,9 +130,9 @@ def main():
         # Calculate variance after aggregation
         variance_after = calculate_variance([aggregated_state_dict])
         
-        # Explain aggregation
-        aggregated_explanation = federated_xai.explain_aggregation(round, test_loader)
-        data_collector.save_aggregation_explanation(aggregated_explanation, round)
+        # # Explain aggregation
+        # aggregated_explanation = federated_xai.explain_aggregation(round, test_loader)
+        # data_collector.save_aggregation_explanation(aggregated_explanation, round)
         
         # Evaluate performance difference
         pre_aggregation_accuracy = server.evaluate_global_model(test_loader, config['device'])[1]
@@ -158,10 +158,22 @@ def main():
             global_metrics = server.evaluate_global_model(test_loader, config['device'])
             # Optionally save global model metrics
             data_collector.collect_global_model_metrics(round, global_metrics)
+            
+        # Define the model evaluation function
+        model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'])[1]  # This extracts only the accuracy
+
+        # Define the averaging function
+        averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
 
         # Calculate Shapley Values
-        model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'])[1] # Accuracy
-        shapley_values = calculate_shapley_values(client_states_before_aggregation, model_evaluation_func, average_model_states, global_model, config['device'])
+        shapley_values = calculate_shapley_values(
+            round_num=round,
+            num_clients=num_clients,
+            data_collector_path=data_collector.output_dir,
+            model_evaluation_func=model_evaluation_func,
+            averaging_func=averaging_func,
+            device=config['device']
+        )
         print(f"Shapley Values for round {round + 1}: {shapley_values}")
 
         # Optionally save Shapley values

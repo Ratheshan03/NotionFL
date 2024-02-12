@@ -51,5 +51,4 @@ def calculate_shapley_values(models, model_evaluation_func, averaging_func, base
         marginal_contributions.append(perm_values)
 
     sv = {client_id: sum(perm[client_id] for perm in marginal_contributions) / len(all_perms) for client_id in models.keys()}
-
     return sv

@@ -46,9 +46,6 @@ class FLClient:
             'confusion_matrix': conf_matrix.tolist()  # Convert numpy array to list for JSON serialization
         }
 
-        print(f"Client {self.client_id} Evaluation - Loss: {test_loss}, Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}")
-        print(f"Client {self.client_id} Confusion Matrix:\n{conf_matrix}")
-
         if self.data_collector:
             self.data_collector.collect_client_evaluation_logs(self.client_id, evaluation_logs, round)
 

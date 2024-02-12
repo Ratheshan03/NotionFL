@@ -1,6 +1,7 @@
 # main.py
 import copy
 import os
+import shap
 import yaml
 import torch
 from FL_Core.data_manager import get_mnist_data_loaders, split_data_for_clients
@@ -11,6 +12,7 @@ from utils.secure_aggregation import fedavg_aggregate, average_model_states, cal
 from utils.privacy_module import apply_differential_privacy
 from utils.contribution_evaluation import calculate_shapley_values
 from utils.data_collector import DataCollector
+from utils.federated_xai import FederatedXAI
 
 def main():
     # Load configurations from a YAML file
@@ -19,6 +21,7 @@ def main():
 
     # Initialize DataCollector
     data_collector = DataCollector(output_dir='output/data_collector')
+    federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'])
     
     # Configuration parameters
     num_clients = config['num_clients']
@@ -66,7 +69,12 @@ def main():
             # Collect the model updates sent to the server
             data_collector.collect_client_updates(client.client_id, model_updates)
               
+            # After storing client models
+            explanation = federated_xai.explain_client_model(client.client_id, round, test_loader)
+            shap_numpy, test_numpy = explanation
+            data_collector.save_shap_explanation_plot(shap_numpy, test_numpy, f'client_{client.client_id}', round)
 
+            
             # Apply differential privacy to the model parameters
             dp_info = apply_differential_privacy(
                 [param for param in client.model.parameters() if param.requires_grad],
@@ -78,7 +86,25 @@ def main():
             # Store differential privacy metrics
             dp_metrics['noise_distribution'] += dp_info['noise_stats']
             dp_metrics['computation_overheads'].append(dp_info['computation_time'])
+            
+            private_model_state = client.model.cpu().state_dict()
+            data_collector.collect_client_model(client.client_id, private_model_state, round, suffix='private')
+             
 
+            # # Explain the impact of differential privacy on this client's model
+            # privacy_explanation = federated_xai.explain_privacy_mechanism(
+            #     client.client_id, round, test_loader, config['noise_multiplier']
+            # )
+
+            # # Save the privacy explanation using the DataCollector
+            # data_collector.save_privacy_explanations(
+            #     privacy_explanation, client.client_id, round
+            # )
+            
+            # # Interpret the privacy explanations
+            # federated_xai.interpret_privacy_impact(round, client.client_id)
+
+            
             # Collect the model parameters for aggregation
             client_updates.append(client_model_state)
 
@@ -90,14 +116,24 @@ def main():
         
         # Calculate variance before aggregation
         variance_before = calculate_variance(client_updates)
+        
+        # Save the global model state before aggregation for explainability
+        data_collector.collect_global_model(global_model.cpu().state_dict(), round, suffix='pre')
 
         # Perform FedAvg aggregation
         pre_aggregated_state_dict = copy.deepcopy(global_model.state_dict())
         aggregated_state_dict, time_overheads = calculate_aggregation_time_and_resources(global_model.state_dict(), client_updates)
         
+        # Save the global model state after aggregation for explainability
+        data_collector.collect_global_model(aggregated_state_dict, round, suffix='post')
+
         # Calculate variance after aggregation
         variance_after = calculate_variance([aggregated_state_dict])
-
+        
+        # Explain aggregation
+        aggregated_explanation = federated_xai.explain_aggregation(round, test_loader)
+        data_collector.save_aggregation_explanation(aggregated_explanation, round)
+        
         # Evaluate performance difference
         pre_aggregation_accuracy = server.evaluate_global_model(test_loader, config['device'])[1]
         global_model.load_state_dict(aggregated_state_dict)
@@ -133,6 +169,24 @@ def main():
 
     # Save the global model after all rounds of training
     data_collector.collect_global_model(global_model.cpu().state_dict(), round)
+    
+    # Explain the global model using SHAP
+    shap_numpy, test_numpy = federated_xai.explain_global_model(round, test_loader)
+
+    # Save the SHAP explanation plot for the global model
+    data_collector.save_shap_explanation_plot(shap_numpy, test_numpy, 'global', round)
+    
+    # After explaining all client and global models
+    comparison_plot = federated_xai.compare_models(round, num_clients)
+
+    # Save the comparison plot path using the data collector
+    data_collector.save_comparison_plot(comparison_plot, round)
+    
+    explanations = federated_xai.compare_model_shap_values(round, num_clients, test_loader)
+    for client_id, explanation in explanations.items():
+        data_collector.save_evaluation_plot(explanation['comparison_plot'], client_id, round)
+    
+    
     
 
 if __name__ == "__main__":

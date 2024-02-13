@@ -91,18 +91,18 @@ def main():
             data_collector.collect_client_model(client.client_id, private_model_state, round, suffix='private')
              
 
-            # # Explain the impact of differential privacy on this client's model
-            # privacy_explanation = federated_xai.explain_privacy_mechanism(
-            #     client.client_id, round, test_loader, config['noise_multiplier']
-            # )
+            # Explain the impact of differential privacy on this client's model
+            privacy_explanation = federated_xai.explain_privacy_mechanism(
+                client.client_id, round, test_loader, config['noise_multiplier']
+            )
 
-            # # Save the privacy explanation using the DataCollector
-            # data_collector.save_privacy_explanations(
-            #     privacy_explanation, client.client_id, round
-            # )
+            # Save the privacy explanation using the DataCollector
+            data_collector.save_privacy_explanations(
+                privacy_explanation, client.client_id, round
+            )
             
-            # # Interpret the privacy explanations
-            # federated_xai.interpret_privacy_impact(round, client.client_id)
+            # Interpret the privacy explanations
+            federated_xai.interpret_privacy_impact(round, client.client_id)
 
             
             # Collect the model parameters for aggregation
@@ -130,9 +130,9 @@ def main():
         # Calculate variance after aggregation
         variance_after = calculate_variance([aggregated_state_dict])
         
-        # # Explain aggregation
-        # aggregated_explanation = federated_xai.explain_aggregation(round, test_loader)
-        # data_collector.save_aggregation_explanation(aggregated_explanation, round)
+        # Explain aggregation
+        aggregated_explanation = federated_xai.explain_aggregation(round, test_loader)
+        data_collector.save_aggregation_explanation(aggregated_explanation, round)
         
         # Evaluate performance difference
         pre_aggregation_accuracy = server.evaluate_global_model(test_loader, config['device'])[1]

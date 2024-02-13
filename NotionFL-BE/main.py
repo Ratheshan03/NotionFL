@@ -72,7 +72,7 @@ def main():
             # After storing client models
             explanation = federated_xai.explain_client_model(client.client_id, round, test_loader)
             shap_numpy, test_numpy = explanation
-            data_collector.save_shap_explanation_plot(shap_numpy, test_numpy, f'client_{client.client_id}', round)
+            data_collector.save_shap_explanation_plot(shap_numpy, test_numpy, f'client_{client.client_id}', round+1)
 
             
             # Apply differential privacy to the model parameters
@@ -186,13 +186,13 @@ def main():
     shap_numpy, test_numpy = federated_xai.explain_global_model(round, test_loader)
 
     # Save the SHAP explanation plot for the global model
-    data_collector.save_shap_explanation_plot(shap_numpy, test_numpy, 'global', round)
+    data_collector.save_shap_explanation_plot(shap_numpy, test_numpy, 'global', round+1)
     
     # After explaining all client and global models
-    comparison_plot = federated_xai.compare_models(round, num_clients)
+    comparison_plot = federated_xai.compare_models(round+1, num_clients)
 
     # Save the comparison plot path using the data collector
-    data_collector.save_comparison_plot(comparison_plot, round)
+    data_collector.save_comparison_plot(comparison_plot, round+1)
     
     explanations = federated_xai.compare_model_shap_values(round, num_clients, test_loader)
     for client_id, explanation in explanations.items():

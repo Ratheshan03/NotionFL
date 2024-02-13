@@ -129,9 +129,27 @@ class DataCollector:
         contribution_metrics_dir = os.path.join(self.output_dir, 'client', 'contribution')
         shapley_values_path = os.path.join(contribution_metrics_dir, f"client_shapley_values_round_{round_num + 1}.json")
         os.makedirs(contribution_metrics_dir, exist_ok=True)
+
+        # Save the Shapley values in JSON format
         with open(shapley_values_path, 'w') as file:
             json.dump(contribution_metrics, file)
             file.write("\n")
+
+        # Create a bar plot for the Shapley values
+        clients = list(contribution_metrics.keys())
+        values = list(contribution_metrics.values())
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(clients, values, color='blue')
+        plt.xlabel('Client ID')
+        plt.ylabel('Shapley Value')
+        plt.title(f'Client Contribution Evaluation (Round {round_num + 1})')
+        plt.xticks(clients, [f'Client {client}' for client in clients])  # Set x-tick labels
+
+        # Save the plot
+        plot_path = os.path.join(contribution_metrics_dir, f"client_contribution_plot_round_{round_num + 1}.png")
+        plt.savefig(plot_path)
+        plt.close()
 
     def collect_secure_aggregation_logs(self, round_num, aggregation_metrics, time_overheads):
         """
@@ -184,7 +202,7 @@ class DataCollector:
             os.makedirs(shap_plots_dir, exist_ok=True)
 
             # File path for the plot
-            plot_path = os.path.join(shap_plots_dir, f"shap_explanation_round_{round_num}.png")
+            plot_path = os.path.join(shap_plots_dir, f"shap_explanation_round_{round_num+1}.png")
 
             # Generate the plot
             shap.image_plot(shap_values, -test_images)

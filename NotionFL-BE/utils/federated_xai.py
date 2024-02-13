@@ -108,11 +108,13 @@ class FederatedXAI:
 
         background, _ = next(iter(data_loader))
         background = background[:64].to(self.device)
-        global_explainer = shap.GradientExplainer(global_model, background)
-        global_shap_values = global_explainer.shap_values(background)
+        
 
         for client_id in range(num_clients):
-            print(f"Processing client {client_id}")  # Logging for debugging
+            global_explainer = shap.GradientExplainer(global_model, background)
+            global_shap_values = global_explainer.shap_values(background)
+            
+            print(f"Comparing client {client_id} and global model shap values")  # Logging for debugging
             client_model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}.pt')
             if not os.path.exists(client_model_path):
                 print(f"Client model file not found: {client_model_path}")  # More detailed logging

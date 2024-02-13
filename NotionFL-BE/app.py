@@ -1,6 +1,11 @@
+import base64
+from io import BytesIO
+import base64
 from flask import Flask, jsonify, request, send_file, send_from_directory, url_for
 from flask_cors import CORS
-import subprocess
+from flask import Flask, jsonify, request
+from flask import jsonify
+from subprocess import Popen, PIPE
 import threading
 import os
 import yaml
@@ -77,14 +82,17 @@ def get_training_logs(client_id):
     except FileNotFoundError:
         return jsonify({"error": "Training logs not found"}), 404
 
-@app.route('/evaluation_logs/<int:client_id>/<int:round_number>', methods=['GET'])
-def get_evaluation_logs(client_id, round_number):
-    try:
-        filename = f'client_{client_id}_evaluation_logs_round_{round_number}.json'
-        file_path = os.path.join(EVALUATION_DIR, filename)
-        return send_file(file_path)
-    except FileNotFoundError:
-        return jsonify({"error": "Evaluation logs not found"}), 404
+
+
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/get_final_global_model', methods=['GET'])
@@ -111,20 +119,251 @@ def get_explanation(client_id, round_number):
     except FileNotFoundError:
         return jsonify({"error": "Explanation files not found"}), 404
     
+    
+    
+    
+@app.route('/global_model_data/<int:round_number>', methods=['GET'])
+def get_global_model_data(round_number):
+    setGlobalData = {
+          'evaluationResults': getEvaluations(round_number),
+          'shapValuesPlot': getShapPlot(round_number),
+          'modelComparisonPlot': getComparisonPlot(round_number),
+          'globalModelUrl': getGlobalModel(round_number),
+    }
+    
+    return jsonify(setGlobalData)
+
+
+def getEvaluations(round_number):
+    try:
+        filename = f'global_model_round_{round_number}.json'
+        file_path = os.path.join(GLOBAL_EVALUATION_DIR, filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Evaluation logs not found"}), 404
+    
+    
+def getShapPlot(round_number):
+    try:
+        filename = f'shap_explanation_round_{round_number}.png'
+        file_path = os.path.join(GLOBAL_SHAP_DIR, filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Shap explanation plot not found"}), 404
+    
+    
+def getComparisonPlot(round_number):
+    try:
+        filename = f'comparison_plot_round_{round_number}.png'
+        file_path = os.path.join(COMPARISON_PLOTS_DIR, filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Comparison plot not found"}), 404
+    
+
+def getGlobalModel(round_number):
+    try:
+        filename = f'global_model_round_{round_number}.pt'
+        file_path = os.path.join(GLOBAL_EVALUATION_DIR, filename)
+        return file_path
+    except (FileNotFoundError, IndexError):
+        return jsonify({"error": "Final global model not found"}), 404
+    
+
+
+
+
+
+
+
+    
+    
+    
+@app.route('/privacy_data/<int:client_id>/<int:round_number>', methods=['GET'])
+def get_privacy_data(round_number, client_id):
+    setPrivacyData = {
+          'dpExplanation': getDPExplanations(round_number, client_id),
+          'dpUsageImage': getDPUsageImage(round_number, client_id),
+          'secureAggregationPlot': getSecureAggregationPlot(round_number),
+    }
+    
+    return jsonify(setPrivacyData)
+   
+    
+def getDPExplanations(round_number, client_id):
+    try:
+        filename = f'interpretation_client_{client_id}_round_{round_number}.txt'
+        file_path = os.path.join(FEDXAI_DIR, 'privacy_explanations', filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "DP explanation text file not found"}), 404 
+    
+    
+def getDPUsageImage(round_number, client_id):
+    try:
+        filename = f'impact_visualization_client_{client_id}_round_{round_number}.png'
+        file_path = os.path.join(FEDXAI_DIR, 'privacy_explanations', 'visualizations', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "DP explanation plot not found"}), 404
+    
+
+def getSecureAggregationPlot(round_number):
+    try:
+        filename = f'comparison_plot_round_{round_number}.png'
+        file_path = os.path.join(FEDXAI_DIR, 'aggregation_explanation', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Secure aggregation plot not found"}), 404
+    
+
+
+# Helper function to get base64 encoded string for an image file
+def image_to_base64(image_path):
+    """
+    Read an image file and convert it to a base64 encoded string.
+    """
+    with open(image_path, 'rb') as image_file:
+        buffered = BytesIO(image_file.read())
+
+    image_base64 = base64.b64encode(buffered.getvalue())
+    encoded_string = image_base64.decode('utf-8')
+    
+    return encoded_string
+    
+
+@app.route('/client_data/<int:client_id>/<int:round_number>', methods=['GET'])
+def get_client_data(client_id, round_number):
+    # Here you would gather all the data for the client and round
+    # For example:
+    data = {
+        'evaluationLogs': get_evaluation_logs(client_id, round_number),
+        'modelEvaluation': get_model_evaluation(client_id, round_number),
+        'globalModelComparison': get_global_model_comparison(round_number),
+        'contributionShapleyValues': get_contribution_shapley_values(client_id, round_number),
+        'contributionPlot': get_contribution_plot(client_id, round_number),
+    }
+    return jsonify(data)
+
+def get_evaluation_logs(client_id, round_number):
+    try:
+        filename = f'client_{client_id}_evaluation_logs_round_{round_number}.json'
+        file_path = os.path.join(EVALUATION_DIR, filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Evaluation logs not found"}), 404
+    
+def get_model_evaluation(client_id, round_number):
+    try:
+        filename = f'shap_explanation_round_{round_number}.png'
+        file_path = os.path.join(FEDXAI_DIR, f'client_{client_id}', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Shap explanation plot not found"}), 404
+    
+    
+def get_global_model_comparison(round_number):
+    try:
+        filename = f'comparison_plot_round_{round_number}.png'
+        file_path = os.path.join(FEDXAI_DIR, 'comparison', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Globalexplanation plot not found"}), 404
+    
+    
+def get_contribution_shapley_values(client_id, round_number):
+    try:
+        filename = f'client_shapley_values_round_{round_number}.json'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'client', 'contribution', filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Shap values not found"}), 404
+
+
+def get_contribution_plot(client_id, round_number):
+    try:
+        filename = f'client_contribution_plot_round_{round_number}.png'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'client', 'contribution', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Shap explanation plot not found"}), 404
+    
+    
+
+    
+    
+
+training_status = {}  # Dictionary to keep track of training status
+
+def run_training_process(training_id, config_data):
+    # Directory for training logs
+    log_dir = 'training_logs'
+    os.makedirs(log_dir, exist_ok=True)
+
+    # Save received config data to config.yml
+    with open('config.yml', 'w') as file:
+        yaml.dump(config_data, file, default_flow_style=False)
+    
+    # File to store training logs
+    log_file = os.path.join(log_dir, f"{training_id}_logs.txt")
+
+    # Start the training process
+    with open(log_file, 'w') as f:
+        process = Popen(["python", "main.py"], stdout=f, stderr=f)
+    
+    # Wait for the process to complete and update the status
+    process.wait()
+    if process.returncode == 0:
+        training_status[training_id] = 'Completed'
+    else:
+        training_status[training_id] = 'Failed {stderr}'
+        
 
 @app.route('/start_training', methods=['POST'])
 def start_training():
-    data = request.form.to_dict()
-    # Convert form data to appropriate types and save to config.yml
-    with open('config.yml', 'w') as file:
-        yaml.dump(data, file, default_flow_style=False)
-    # Start training in a new thread
-    threading.Thread(target=lambda: subprocess.run(["python", "main.py"])).start()
-    return jsonify({"status": "Training started"}), 200
+    data = request.json  # Get data from POST request
+    training_id = "training_" + str(len(training_status) + 1)  # Generate simple training ID
 
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({'error': 'Not found'}), 404
+    # Convert string values to correct types
+    try:
+        data['batch_size'] = int(data.get('batch_size', 64))
+        data['epochs'] = int(data.get('epochs', 5))
+        data['fl_rounds'] = int(data.get('fl_rounds', 1))
+        data['eval_every_n_rounds'] = int(data.get('eval_every_n_rounds', 1))
+        data['num_clients'] = int(data.get('num_clients', 4))
+        data['learning_rate'] = float(data.get('learning_rate', 0.01))
+        data['noise_multiplier'] = float(data.get('noise_multiplier', 0.1))
+        data['clip_threshold'] = float(data.get('clip_threshold', 1.0))
+    except (ValueError, KeyError) as e:
+        return jsonify({"error": f"Invalid data format: {e}"}), 400
+
+    # Initialize training status and start training in a new thread
+    training_status[training_id] = 'Started'
+    thread = threading.Thread(target=run_training_process, args=(training_id, data))
+    thread.start()
+    
+    return jsonify({"status": "Training started", "training_id": training_id}), 202
+
+@app.route('/training_status/<training_id>', methods=['GET'])
+def check_training_status(training_id):
+    status = training_status.get(training_id, "No such training process found")
+    log_file = os.path.join('training_logs', f"{training_id}_logs.txt")
+    
+    # Read logs from the file
+    try:
+        with open(log_file, 'r') as file:
+            logs = file.read()
+    except FileNotFoundError:
+        logs = "Logs not found"
+    
+    print({"training_id": training_id, "status": status})
+
+    return jsonify({"training_id": training_id, "status": status, "logs": logs})
+
 
 if __name__ == '__main__':
     app.run(debug=True)

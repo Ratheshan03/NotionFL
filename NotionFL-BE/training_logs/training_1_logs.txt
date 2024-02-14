@@ -1,190 +1,198 @@
 FigureCanvasAgg is non-interactive, and thus cannot be shown
 FigureCanvasAgg is non-interactive, and thus cannot be shown
-FigureCanvasAgg is non-interactive, and thus cannot be shown
+Incentives allocated: {'0': -521.7391304347705, '1': 10521.739130434771}
 
 FL Training Round 1/1
 
 Training client 0 model...
-Epoch 1/3, Loss: 0.7374
-Epoch 2/3, Loss: 0.3514
-Epoch 3/3, Loss: 0.2815
+Epoch 1/3, Loss: 0.7004
+Epoch 2/3, Loss: 0.3459
+Epoch 3/3, Loss: 0.2820
 
 Evaluating client 0 model...
-Test set: Loss: 0.1669, Accuracy: 0.9505, Precision: 0.9507, Recall: 0.9505, F1: 0.9503
+Test set: Loss: 0.1599, Accuracy: 0.9508, Precision: 0.9512, Recall: 0.9508, F1: 0.9508
 Confusion Matrix:
-[[ 966    0    1    1    0    2    6    1    3    0]
- [   0 1122    3    3    0    0    4    1    2    0]
- [   7    2  984    7    3    0    6   14    9    0]
- [   0    1   21  947    0    5    2   21   10    3]
- [   1    1    5    0  932    0   10    3    2   28]
- [   7    1    1   23    4  813   19    5   12    7]
- [   8    3    3    1    5    4  934    0    0    0]
- [   1    8   17    0    2    0    0  991    1    8]
- [   9    5    8   14    8   12   16   20  871   11]
- [   9    6    1   10   18    2    0   14    4  945]]
+[[ 963    0    1    0    1    2    5    1    7    0]
+ [   0 1118    2    2    0    0    3    1    9    0]
+ [  13    3  957   10    7    0    4   10   27    1]
+ [   1    2    5  949    1   13    1   11   24    3]
+ [   1    0    5    0  947    0    5    1    3   20]
+ [   8    1    1   14    3  833    9    1   15    7]
+ [   9    3    2    1    8    9  921    0    5    0]
+ [   2    8   16    2    7    0    0  959    3   31]
+ [   4    3    3   10    9    8    7    5  920    5]
+ [   7    7    0   10   29    2    1    4    8  941]]
 
 Training client 1 model...
-Epoch 1/3, Loss: 0.2590
-Epoch 2/3, Loss: 0.2213
-Epoch 3/3, Loss: 0.1945
+Epoch 1/3, Loss: 0.2611
+Epoch 2/3, Loss: 0.2254
+Epoch 3/3, Loss: 0.2000
 
 Evaluating client 1 model...
-Test set: Loss: 0.1043, Accuracy: 0.9693, Precision: 0.9694, Recall: 0.9693, F1: 0.9693
+Test set: Loss: 0.1105, Accuracy: 0.9675, Precision: 0.9676, Recall: 0.9675, F1: 0.9674
 Confusion Matrix:
-[[ 968    0    1    1    0    2    5    1    2    0]
- [   0 1121    3    2    0    0    6    0    3    0]
- [   7    1  991    7    3    0    8    6    9    0]
- [   1    0    7  980    0    3    0    6   11    2]
- [   1    0    2    0  955    0   10    1    2   11]
- [   4    1    0    9    0  864    6    1    5    2]
- [   5    3    0    1    3    3  941    0    2    0]
- [   2    5   19    4    0    0    0  983    1   14]
- [   7    0    1    7    6    4    9    6  931    3]
- [   5    5    1    6   15    2    1    5   10  959]]
+[[ 972    0    1    0    0    2    2    1    2    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [   8    4  990    3    6    0    3   12    6    0]
+ [   0    0    2  974    0   13    0   11    8    2]
+ [   1    2    2    0  954    0    7    3    2   11]
+ [   3    1    0    7    1  867    8    1    2    2]
+ [  10    3    1    1    5    6  930    0    2    0]
+ [   2    6   13    2    2    0    0  996    1    6]
+ [   6    3    2    5    4    8    8    6  928    4]
+ [   8    6    1   12   19    6    1   14    4  938]]
 Aggregation explanation for round 0 saved successfully.
-Global Model Test set: Average loss: 0.1043, Accuracy: 0.9693
-Precision: 0.9694, Recall: 0.9693, F1 Score: 0.9693
+Global Model Test set: Average loss: 0.1105, Accuracy: 0.9675
+Precision: 0.9676, Recall: 0.9675, F1 Score: 0.9674
 Confusion Matrix:
-[[ 968    0    1    1    0    2    5    1    2    0]
- [   0 1121    3    2    0    0    6    0    3    0]
- [   7    1  991    7    3    0    8    6    9    0]
- [   1    0    7  980    0    3    0    6   11    2]
- [   1    0    2    0  955    0   10    1    2   11]
- [   4    1    0    9    0  864    6    1    5    2]
- [   5    3    0    1    3    3  941    0    2    0]
- [   2    5   19    4    0    0    0  983    1   14]
- [   7    0    1    7    6    4    9    6  931    3]
- [   5    5    1    6   15    2    1    5   10  959]]
-Global Model Test set: Average loss: 0.1043, Accuracy: 0.9693
-Precision: 0.9694, Recall: 0.9693, F1 Score: 0.9693
+[[ 972    0    1    0    0    2    2    1    2    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [   8    4  990    3    6    0    3   12    6    0]
+ [   0    0    2  974    0   13    0   11    8    2]
+ [   1    2    2    0  954    0    7    3    2   11]
+ [   3    1    0    7    1  867    8    1    2    2]
+ [  10    3    1    1    5    6  930    0    2    0]
+ [   2    6   13    2    2    0    0  996    1    6]
+ [   6    3    2    5    4    8    8    6  928    4]
+ [   8    6    1   12   19    6    1   14    4  938]]
+Global Model Test set: Average loss: 0.1105, Accuracy: 0.9675
+Precision: 0.9676, Recall: 0.9675, F1 Score: 0.9674
 Confusion Matrix:
-[[ 968    0    1    1    0    2    5    1    2    0]
- [   0 1121    3    2    0    0    6    0    3    0]
- [   7    1  991    7    3    0    8    6    9    0]
- [   1    0    7  980    0    3    0    6   11    2]
- [   1    0    2    0  955    0   10    1    2   11]
- [   4    1    0    9    0  864    6    1    5    2]
- [   5    3    0    1    3    3  941    0    2    0]
- [   2    5   19    4    0    0    0  983    1   14]
- [   7    0    1    7    6    4    9    6  931    3]
- [   5    5    1    6   15    2    1    5   10  959]]
-Global Model Test set: Average loss: 0.1043, Accuracy: 0.9693
-Precision: 0.9694, Recall: 0.9693, F1 Score: 0.9693
+[[ 972    0    1    0    0    2    2    1    2    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [   8    4  990    3    6    0    3   12    6    0]
+ [   0    0    2  974    0   13    0   11    8    2]
+ [   1    2    2    0  954    0    7    3    2   11]
+ [   3    1    0    7    1  867    8    1    2    2]
+ [  10    3    1    1    5    6  930    0    2    0]
+ [   2    6   13    2    2    0    0  996    1    6]
+ [   6    3    2    5    4    8    8    6  928    4]
+ [   8    6    1   12   19    6    1   14    4  938]]
+Global Model Test set: Average loss: 0.1105, Accuracy: 0.9675
+Precision: 0.9676, Recall: 0.9675, F1 Score: 0.9674
 Confusion Matrix:
-[[ 968    0    1    1    0    2    5    1    2    0]
- [   0 1121    3    2    0    0    6    0    3    0]
- [   7    1  991    7    3    0    8    6    9    0]
- [   1    0    7  980    0    3    0    6   11    2]
- [   1    0    2    0  955    0   10    1    2   11]
- [   4    1    0    9    0  864    6    1    5    2]
- [   5    3    0    1    3    3  941    0    2    0]
- [   2    5   19    4    0    0    0  983    1   14]
- [   7    0    1    7    6    4    9    6  931    3]
- [   5    5    1    6   15    2    1    5   10  959]]
-Global Model Test set: Average loss: 0.1669, Accuracy: 0.9505
-Precision: 0.9507, Recall: 0.9505, F1 Score: 0.9503
+[[ 972    0    1    0    0    2    2    1    2    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [   8    4  990    3    6    0    3   12    6    0]
+ [   0    0    2  974    0   13    0   11    8    2]
+ [   1    2    2    0  954    0    7    3    2   11]
+ [   3    1    0    7    1  867    8    1    2    2]
+ [  10    3    1    1    5    6  930    0    2    0]
+ [   2    6   13    2    2    0    0  996    1    6]
+ [   6    3    2    5    4    8    8    6  928    4]
+ [   8    6    1   12   19    6    1   14    4  938]]
+Global Model Test set: Average loss: 0.1599, Accuracy: 0.9508
+Precision: 0.9512, Recall: 0.9508, F1 Score: 0.9508
 Confusion Matrix:
-[[ 966    0    1    1    0    2    6    1    3    0]
- [   0 1122    3    3    0    0    4    1    2    0]
- [   7    2  984    7    3    0    6   14    9    0]
- [   0    1   21  947    0    5    2   21   10    3]
- [   1    1    5    0  932    0   10    3    2   28]
- [   7    1    1   23    4  813   19    5   12    7]
- [   8    3    3    1    5    4  934    0    0    0]
- [   1    8   17    0    2    0    0  991    1    8]
- [   9    5    8   14    8   12   16   20  871   11]
- [   9    6    1   10   18    2    0   14    4  945]]
-Global Model Test set: Average loss: 0.1689, Accuracy: 0.9473
-Precision: 0.9479, Recall: 0.9473, F1 Score: 0.9473
+[[ 963    0    1    0    1    2    5    1    7    0]
+ [   0 1118    2    2    0    0    3    1    9    0]
+ [  13    3  957   10    7    0    4   10   27    1]
+ [   1    2    5  949    1   13    1   11   24    3]
+ [   1    0    5    0  947    0    5    1    3   20]
+ [   8    1    1   14    3  833    9    1   15    7]
+ [   9    3    2    1    8    9  921    0    5    0]
+ [   2    8   16    2    7    0    0  959    3   31]
+ [   4    3    3   10    9    8    7    5  920    5]
+ [   7    7    0   10   29    2    1    4    8  941]]
+Global Model Test set: Average loss: 0.1581, Accuracy: 0.9537
+Precision: 0.9538, Recall: 0.9537, F1 Score: 0.9536
 Confusion Matrix:
-[[ 958    0    0    0    0    2   15    1    4    0]
- [   0 1124    2    1    0    1    5    1    1    0]
- [  11    5  937   14    6    1   18   15   23    2]
- [   3    2    8  947    2   20    3    8   11    6]
- [   0    1    2    0  919    0   18    2    3   37]
- [   6    1    0   11    3  839   16    1    8    7]
- [   9    3    0    0    5    6  934    0    1    0]
- [   2   10   12    3    5    0    0  951    1   44]
- [   5    5    2   11    7   11   12    9  906    6]
- [   6    6    0   10   13    2    1    6    7  958]]
-Global Model Test set: Average loss: 0.1255, Accuracy: 0.9635
-Precision: 0.9636, Recall: 0.9635, F1 Score: 0.9635
+[[ 960    0    0    0    1    3   10    1    5    0]
+ [   0 1116    4    2    0    0    3    1    9    0]
+ [  10    2  985    6    6    0    5    8   10    0]
+ [   0    2   16  952    1   10    0   10   16    3]
+ [   1    0    6    0  948    0    8    1    3   15]
+ [   6    1    2   18    3  824   17    1   14    6]
+ [  10    3    1    1    8    5  927    0    3    0]
+ [   4   11   17    2    5    0    0  977    2   10]
+ [   4    4    5   10    6    5    8    9  919    4]
+ [   8    6    1   12   26    2    1   15    9  929]]
+Global Model Test set: Average loss: 0.1270, Accuracy: 0.9635
+Precision: 0.9635, Recall: 0.9635, F1 Score: 0.9634
 Confusion Matrix:
-[[ 965    0    1    1    0    2    6    1    4    0]
- [   0 1120    3    3    0    0    6    0    3    0]
- [   8    1  986    8    3    0    7    9   10    0]
- [   0    1    9  972    0    3    2    9   11    3]
- [   1    0    3    0  951    0   10    1    2   14]
- [   7    1    0   11    1  842   15    2    8    5]
- [   7    3    0    1    4    5  937    0    1    0]
- [   1    7   16    1    2    0    0  986    1   14]
- [   7    2    1    9    7    5   11    6  922    4]
- [   6    6    1    9   17    1    1    7    7  954]]
-Global Model Test set: Average loss: 0.1043, Accuracy: 0.9693
-Precision: 0.9694, Recall: 0.9693, F1 Score: 0.9693
+[[ 969    0    1    0    0    3    3    1    3    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [  10    2  980    6    6    0    4   13   11    0]
+ [   0    1    6  969    0    9    0   10   13    2]
+ [   1    0    2    0  952    0    7    2    3   15]
+ [   7    1    0   11    3  845   11    1    8    5]
+ [  10    3    2    1    5    6  928    0    3    0]
+ [   2    9   14    1    3    0    0  984    2   13]
+ [   5    4    1    5    4    4    7    6  934    4]
+ [   8    6    0   10   20    3    1    7    6  948]]
+Global Model Test set: Average loss: 0.1105, Accuracy: 0.9675
+Precision: 0.9676, Recall: 0.9675, F1 Score: 0.9674
 Confusion Matrix:
-[[ 968    0    1    1    0    2    5    1    2    0]
- [   0 1121    3    2    0    0    6    0    3    0]
- [   7    1  991    7    3    0    8    6    9    0]
- [   1    0    7  980    0    3    0    6   11    2]
- [   1    0    2    0  955    0   10    1    2   11]
- [   4    1    0    9    0  864    6    1    5    2]
- [   5    3    0    1    3    3  941    0    2    0]
- [   2    5   19    4    0    0    0  983    1   14]
- [   7    0    1    7    6    4    9    6  931    3]
- [   5    5    1    6   15    2    1    5   10  959]]
-Global Model Test set: Average loss: 0.1043, Accuracy: 0.9693
-Precision: 0.9694, Recall: 0.9693, F1 Score: 0.9693
+[[ 972    0    1    0    0    2    2    1    2    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [   8    4  990    3    6    0    3   12    6    0]
+ [   0    0    2  974    0   13    0   11    8    2]
+ [   1    2    2    0  954    0    7    3    2   11]
+ [   3    1    0    7    1  867    8    1    2    2]
+ [  10    3    1    1    5    6  930    0    2    0]
+ [   2    6   13    2    2    0    0  996    1    6]
+ [   6    3    2    5    4    8    8    6  928    4]
+ [   8    6    1   12   19    6    1   14    4  938]]
+Global Model Test set: Average loss: 0.1105, Accuracy: 0.9675
+Precision: 0.9676, Recall: 0.9675, F1 Score: 0.9674
 Confusion Matrix:
-[[ 968    0    1    1    0    2    5    1    2    0]
- [   0 1121    3    2    0    0    6    0    3    0]
- [   7    1  991    7    3    0    8    6    9    0]
- [   1    0    7  980    0    3    0    6   11    2]
- [   1    0    2    0  955    0   10    1    2   11]
- [   4    1    0    9    0  864    6    1    5    2]
- [   5    3    0    1    3    3  941    0    2    0]
- [   2    5   19    4    0    0    0  983    1   14]
- [   7    0    1    7    6    4    9    6  931    3]
- [   5    5    1    6   15    2    1    5   10  959]]
-Global Model Test set: Average loss: 0.1689, Accuracy: 0.9473
-Precision: 0.9479, Recall: 0.9473, F1 Score: 0.9473
+[[ 972    0    1    0    0    2    2    1    2    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [   8    4  990    3    6    0    3   12    6    0]
+ [   0    0    2  974    0   13    0   11    8    2]
+ [   1    2    2    0  954    0    7    3    2   11]
+ [   3    1    0    7    1  867    8    1    2    2]
+ [  10    3    1    1    5    6  930    0    2    0]
+ [   2    6   13    2    2    0    0  996    1    6]
+ [   6    3    2    5    4    8    8    6  928    4]
+ [   8    6    1   12   19    6    1   14    4  938]]
+Global Model Test set: Average loss: 0.1581, Accuracy: 0.9537
+Precision: 0.9538, Recall: 0.9537, F1 Score: 0.9536
 Confusion Matrix:
-[[ 958    0    0    0    0    2   15    1    4    0]
- [   0 1124    2    1    0    1    5    1    1    0]
- [  11    5  937   14    6    1   18   15   23    2]
- [   3    2    8  947    2   20    3    8   11    6]
- [   0    1    2    0  919    0   18    2    3   37]
- [   6    1    0   11    3  839   16    1    8    7]
- [   9    3    0    0    5    6  934    0    1    0]
- [   2   10   12    3    5    0    0  951    1   44]
- [   5    5    2   11    7   11   12    9  906    6]
- [   6    6    0   10   13    2    1    6    7  958]]
-Global Model Test set: Average loss: 0.1255, Accuracy: 0.9635
-Precision: 0.9636, Recall: 0.9635, F1 Score: 0.9635
+[[ 960    0    0    0    1    3   10    1    5    0]
+ [   0 1116    4    2    0    0    3    1    9    0]
+ [  10    2  985    6    6    0    5    8   10    0]
+ [   0    2   16  952    1   10    0   10   16    3]
+ [   1    0    6    0  948    0    8    1    3   15]
+ [   6    1    2   18    3  824   17    1   14    6]
+ [  10    3    1    1    8    5  927    0    3    0]
+ [   4   11   17    2    5    0    0  977    2   10]
+ [   4    4    5   10    6    5    8    9  919    4]
+ [   8    6    1   12   26    2    1   15    9  929]]
+Global Model Test set: Average loss: 0.1270, Accuracy: 0.9635
+Precision: 0.9635, Recall: 0.9635, F1 Score: 0.9634
 Confusion Matrix:
-[[ 965    0    1    1    0    2    6    1    4    0]
- [   0 1120    3    3    0    0    6    0    3    0]
- [   8    1  986    8    3    0    7    9   10    0]
- [   0    1    9  972    0    3    2    9   11    3]
- [   1    0    3    0  951    0   10    1    2   14]
- [   7    1    0   11    1  842   15    2    8    5]
- [   7    3    0    1    4    5  937    0    1    0]
- [   1    7   16    1    2    0    0  986    1   14]
- [   7    2    1    9    7    5   11    6  922    4]
- [   6    6    1    9   17    1    1    7    7  954]]
-Global Model Test set: Average loss: 0.1669, Accuracy: 0.9505
-Precision: 0.9507, Recall: 0.9505, F1 Score: 0.9503
+[[ 969    0    1    0    0    3    3    1    3    0]
+ [   0 1126    2    2    0    0    3    0    2    0]
+ [  10    2  980    6    6    0    4   13   11    0]
+ [   0    1    6  969    0    9    0   10   13    2]
+ [   1    0    2    0  952    0    7    2    3   15]
+ [   7    1    0   11    3  845   11    1    8    5]
+ [  10    3    2    1    5    6  928    0    3    0]
+ [   2    9   14    1    3    0    0  984    2   13]
+ [   5    4    1    5    4    4    7    6  934    4]
+ [   8    6    0   10   20    3    1    7    6  948]]
+Global Model Test set: Average loss: 0.1599, Accuracy: 0.9508
+Precision: 0.9512, Recall: 0.9508, F1 Score: 0.9508
 Confusion Matrix:
-[[ 966    0    1    1    0    2    6    1    3    0]
- [   0 1122    3    3    0    0    4    1    2    0]
- [   7    2  984    7    3    0    6   14    9    0]
- [   0    1   21  947    0    5    2   21   10    3]
- [   1    1    5    0  932    0   10    3    2   28]
- [   7    1    1   23    4  813   19    5   12    7]
- [   8    3    3    1    5    4  934    0    0    0]
- [   1    8   17    0    2    0    0  991    1    8]
- [   9    5    8   14    8   12   16   20  871   11]
- [   9    6    1   10   18    2    0   14    4  945]]
-Shapley Values for round 1: {0: -0.0013000000000000234, 1: 0.017500000000000016}
-Processing client 0
-Processing client 1
+[[ 963    0    1    0    1    2    5    1    7    0]
+ [   0 1118    2    2    0    0    3    1    9    0]
+ [  13    3  957   10    7    0    4   10   27    1]
+ [   1    2    5  949    1   13    1   11   24    3]
+ [   1    0    5    0  947    0    5    1    3   20]
+ [   8    1    1   14    3  833    9    1   15    7]
+ [   9    3    2    1    8    9  921    0    5    0]
+ [   2    8   16    2    7    0    0  959    3   31]
+ [   4    3    3   10    9    8    7    5  920    5]
+ [   7    7    0   10   29    2    1    4    8  941]]
+Shapley Values for round 1: {0: -0.0034500000000000086, 1: 0.01325000000000004}
+Traceback (most recent call last):
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\main.py", line 210, in <module>
+    
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\main.py", line 184, in main
+    allocate_and_save_incentives(round)
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\utils\allocate_incentive.py", line 27, in allocate_and_save_incentives
+    shapley_values = read_shapley_values(shapley_values_file)
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\utils\allocate_incentive.py", line 5, in read_shapley_values
+    with open(file_path, 'r') as file:
+FileNotFoundError: [Errno 2] No such file or directory: 'output/data_collector/client/contribution/client_shapley_values_round_0.json'

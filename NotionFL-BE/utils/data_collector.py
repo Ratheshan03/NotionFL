@@ -331,6 +331,16 @@ class DataCollector:
         # Save the explanation
         with open(explanation_path, 'w') as file:
             json.dump(privacy_explanation, file, indent=4)
+            
+            
+            
+    def collect_incentives_log(self, round_num, incentives):
+        incentives_log_dir = os.path.join(self.output_dir, 'client', 'incentives')
+        incentives_log_path = os.path.join(incentives_log_dir, f"client_incentives_round_{round_num}.json")
+        os.makedirs(incentives_log_dir, exist_ok=True)
+        with open(incentives_log_path, 'w') as file:
+            json.dump(incentives, file, indent=4)
+
 
 
     # Additional methods for saving, loading, and processing the collected data can be added as needed

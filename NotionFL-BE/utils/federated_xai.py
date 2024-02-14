@@ -356,3 +356,54 @@ class FederatedXAI:
     # Additional methods as needed...
 
 
+
+    def generate_incentive_explanation(self, round_num):
+        shapley_values_file = os.path.join(self.data_collector_path, 'client', 'contribution', f'client_shapley_values_round_{round_num}.json')
+        incentives_file = os.path.join(self.data_collector_path, 'client', 'contribution', f'client_incentives_round_{round_num}.json')
+        explanation_dir = os.path.join(self.data_collector_path, 'client', 'contribution')
+        explanation_file = os.path.join(explanation_dir, f'incentive_explanation_round_{round_num}.txt')
+
+        # Ensure the directory exists
+        os.makedirs(explanation_dir, exist_ok=True)
+        
+        # Read the Shapley values and incentives
+        with open(shapley_values_file, 'r') as file:
+            shapley_values = json.load(file)
+        with open(incentives_file, 'r') as file:
+            incentives = json.load(file)
+
+        # Generate the explanation text
+        explanation = self._compose_incentive_explanation_text(shapley_values, incentives)
+        
+        # Save the explanation to a file
+        with open(explanation_file, 'w') as file:
+            file.write(explanation)
+
+        # Generate and save the plot
+        self._create_incentive_plot(shapley_values, incentives, round_num)
+
+    def _compose_incentive_explanation_text(self, shapley_values, incentives):
+        explanation = "Federated Learning Incentive Allocation Explanation\n"
+        explanation += "-------------------------------------------------\n\n"
+        explanation += "The incentives for each client in the federated learning system were allocated based on the Shapley values calculated for each client.\n\n"
+        explanation += "Shapley Value Breakdown:\n"
+        for client_id, value in shapley_values.items():
+            explanation += f"- Client {client_id}: Shapley Value = {value}\n"
+        explanation += "\nIncentive Allocation:\n"
+        for client_id, incentive in incentives.items():
+            explanation += f"- Client {client_id}: Incentive = ${incentive:.2f}\n"
+        explanation += "\nThis method ensures a fair distribution of the total incentive pool based on the contribution of each client.\n"
+        return explanation
+
+    def _create_incentive_plot(self, shapley_values, incentives, round_num):
+        plt.figure(figsize=(10, 6))
+        plt.bar(shapley_values.keys(), shapley_values.values(), color='blue', label='Shapley Values')
+        plt.bar(incentives.keys(), incentives.values(), color='green', alpha=0.5, label='Incentives')
+        plt.xlabel('Client ID')
+        plt.ylabel('Amount')
+        plt.title(f'Incentive Allocation vs Shapley Values (Round {round_num})')
+        plt.legend()
+        
+        plot_file = os.path.join(self.data_collector_path, 'client', 'contribution', f'incentive_plot_round_{round_num}.png')
+        plt.savefig(plot_file)
+        plt.close()

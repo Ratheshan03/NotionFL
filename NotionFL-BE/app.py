@@ -27,8 +27,6 @@ GLOBAL_SHAP_DIR = os.path.join(DATA_COLLECTOR_DIR, 'FedXAIEvaluation', 'global')
 
 
 
-
-
 @app.route('/get_global_evaluation/<round_number>', methods=['GET'])
 def get_global_evaluation(round_number):
     json_filename = f'global_model_round_{round_number}.json'
@@ -76,21 +74,99 @@ def get_comparison_plot(round_number):
 @app.route('/training_logs/<int:client_id>', methods=['GET'])
 def get_training_logs(client_id):
     try:
-        log_files = [f for f in os.listdir(TRAINING_LOGS_DIR) if f.startswith(f'client_{client_id}_')]
+        log_files = [f for f in os.listdir(TRAINING_LOGS_DIR) if f.startswith(f'client_{client_id}')]
         logs = [json.load(open(os.path.join(TRAINING_LOGS_DIR, file), 'r')) for file in log_files]
         return jsonify(logs)
     except FileNotFoundError:
         return jsonify({"error": "Training logs not found"}), 404
 
 
+@app.route('/client_incentives/<int:round_num>', methods=['GET'])
+def get_incentive_data(round_num):
+    data = {
+            'shapleyValues': get_incentive_shapley_values(round_num),
+            'contributionPlot': get_incentive_contribution_plot(round_num), 
+            'incentives': get_incentives(round_num),
+            'incentivesPlot': get_shapley_incentive_plot(round_num),
+            'incentivesExplanation': get_text_explanation(round_num),
+    }
+    return jsonify(data)
+
+
+def get_incentive_shapley_values(round_num):
+    try:
+        filename = f'client_shapley_values_round_{round_num}.json'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'client', 'contribution', filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Shapley values not found"}), 404
+    
+def get_incentive_contribution_plot(round_num):
+    try:
+        filename = f'client_contribution_plot_round_{round_num}.png'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'client', 'contribution', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Contribution plot not found"}), 404
+    
+    
+def get_incentives(round_num):
+    try:
+        filename = f'client_incentives_round_{round_num}.json'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'client', 'contribution', filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Incentives not found"}), 404
+    
+    
+def get_shapley_incentive_plot(round_num):
+    try:
+        filename = f'incentive_plot_round_{round_num}.png'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'client', 'contribution', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Incentive plot not found"}), 404
+    
+
+def get_text_explanation(round_num):
+    try:
+        filename = f'incentive_explanation.txt'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'client', 'contribution', filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Incentive explanation not found"}), 404
 
 
 
 
+@app.route('/client_full_data/<int:client_id>', methods=['GET'])
+def get_client_full_data(client_id):
+    data = {
+            'trainingLogs': get_client_training_logs(client_id),
+            'trainingStatus': check_client_training_status(client_id), 
+    }
+    return data
 
 
+@app.route('/client_training_logs/<int:client_id>', methods=['GET'])
+def get_client_training_logs(client_id):
+    try:
+        filename = f'client_{client_id}_training_logs.json'
+        file_path = os.path.join(TRAINING_LOGS_DIR, filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Evaluation logs not found"}), 404
+    
+@app.route('/training_status/<int:client_id>', methods=['GET'])
+def check_client_training_status(client_id):
+    # Assuming training_status is a dictionary mapping client_ids to their training status
+    status = training_status.get(client_id, "No such training process found")
 
-
+    return status
 
 
 
@@ -170,12 +246,6 @@ def getGlobalModel(round_number):
     except (FileNotFoundError, IndexError):
         return jsonify({"error": "Final global model not found"}), 404
     
-
-
-
-
-
-
 
     
     

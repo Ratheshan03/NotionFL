@@ -13,6 +13,7 @@ from utils.privacy_module import apply_differential_privacy
 from utils.contribution_evaluation import calculate_shapley_values
 from utils.data_collector import DataCollector
 from utils.federated_xai import FederatedXAI
+from utils.allocate_incentive import allocate_and_save_incentives
 
 def main():
     # Load configurations from a YAML file
@@ -178,6 +179,12 @@ def main():
 
         # Optionally save Shapley values
         data_collector.collect_contribution_eval_metrics(round, shapley_values)
+        
+        # Allocate incentives based on Shapley values
+        allocate_and_save_incentives(round+1)
+        # Call the function to generate and save the explanation
+        federated_xai.generate_incentive_explanation(round+1)
+
 
     # Save the global model after all rounds of training
     data_collector.collect_global_model(global_model.cpu().state_dict(), round)
@@ -191,15 +198,12 @@ def main():
     # After explaining all client and global models
     comparison_plot = federated_xai.compare_models(round+1, num_clients)
 
-    # Save the comparison plot path using the data collector
     data_collector.save_comparison_plot(comparison_plot, round+1)
-    
+
     explanations = federated_xai.compare_model_shap_values(round, num_clients, test_loader)
     for client_id, explanation in explanations.items():
         data_collector.save_evaluation_plot(explanation['comparison_plot'], client_id, round)
-    
-    
-    
+ 
 
 if __name__ == "__main__":
     main()

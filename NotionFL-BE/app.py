@@ -49,6 +49,28 @@ def get_global_evaluation(round_number):
         'json_url': json_url,
         'shap_image_url': shap_image_url
     }), 200
+    
+    
+@app.route('/get_global_evaluation/<round_number>', methods=['GET'])
+def get_client_evaluation_logs(round):
+    try:
+        filename = f'global_model_round_{round}.json'
+        file_path = os.path.join(DATA_COLLECTOR_DIR, 'global', 'evaluation', filename)
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return jsonify({"error": "Evaluation logs not found"}), 404
+    
+
+@app.route('/get_client_shap_plot/<client_number>/<round_number>', methods=['GET'])
+def get_client_shap_plot(client_id, round):
+    try:
+        filename = f'shap_explanation_round_{round}.png'
+        file_path = os.path.join(FEDXAI_DIR, f'client_{client_id}', filename)
+        return image_to_base64(file_path)
+    except FileNotFoundError:
+        return jsonify({"error": "Evaluation logs not found"}), 404
+    
 
 @app.route('/comparison_plot/<round_number>', methods=['GET'])
 def get_comparison_plot(round_number):

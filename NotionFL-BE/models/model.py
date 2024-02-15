@@ -11,17 +11,17 @@ class MNISTModel(nn.Module):
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
         self.dropout1 = nn.Dropout(0.25)
         self.dropout2 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(64 * 14 * 14, 128)  # The feature map size is reduced to 14x14 after pooling
-        self.fc2 = nn.Linear(128, 10)  # 10 classes for MNIST digits
+        self.fc1 = nn.Linear(64 * 14 * 14, 128) 
+        self.fc2 = nn.Linear(128, 10)
 
     def forward(self, x):
         x = self.conv1(x)
         x = F.relu(x)
         x = self.conv2(x)
         x = F.relu(x)
-        x = F.max_pool2d(x, 2)  # Reduce the feature map size to 14x14
+        x = F.max_pool2d(x, 2)  
         x = self.dropout1(x)
-        x = torch.flatten(x, 1)  # Flatten the tensor for the fully connected layer
+        x = torch.flatten(x, 1) 
         x = self.fc1(x)
         x = F.relu(x)
         x = self.dropout2(x)

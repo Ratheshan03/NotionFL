@@ -1,0 +1,96 @@
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+FL Training Round 1/1
+
+Training client 0 model...
+Epoch 1/5, Loss: 1.0183
+Epoch 2/5, Loss: 0.4435
+Epoch 3/5, Loss: 0.3643
+Epoch 4/5, Loss: 0.3275
+Epoch 5/5, Loss: 0.2915
+
+Evaluating client 0 model...
+Test set: Loss: 0.1788, Accuracy: 0.9469, Precision: 0.9476, Recall: 0.9469, F1: 0.9469
+Confusion Matrix:
+[[ 960    0    0    0    0    2   11    1    6    0]
+ [   0 1119    2    3    1    0    4    0    6    0]
+ [  10    2  963   17    5    1   10    8   14    2]
+ [   0    1    6  975    0    7    0    8   10    3]
+ [   0    1    5    0  925    0   15    0    4   32]
+ [   6    1    0   37    4  814   15    1    9    5]
+ [   6    3    4    2    4    6  931    0    2    0]
+ [   1   15   19   11    8    0    0  946    0   28]
+ [   3    4    4   31    5    9    9    7  897    5]
+ [   8    7    0   20   20    3    2    5    5  939]]
+
+Training client 1 model...
+Epoch 1/5, Loss: 0.3037
+Epoch 2/5, Loss: 0.2737
+Epoch 3/5, Loss: 0.2568
+Epoch 4/5, Loss: 0.2306
+Epoch 5/5, Loss: 0.2224
+
+Evaluating client 1 model...
+Test set: Loss: 0.1303, Accuracy: 0.9573, Precision: 0.9578, Recall: 0.9573, F1: 0.9573
+Confusion Matrix:
+[[ 969    0    1    0    0    2    4    1    3    0]
+ [   0 1121    4    1    0    0    3    2    4    0]
+ [  10    0  993    4    5    1    5    9    4    1]
+ [   1    0   13  955    0   16    0   10   11    4]
+ [   0    1    4    0  895    0   10    1    3   68]
+ [   8    1    0   17    1  844    8    1    5    7]
+ [   7    3    2    1    4    7  932    0    2    0]
+ [   2    7   15    1    2    0    0  979    2   20]
+ [   4    2    4    6    5    7    8    8  919   11]
+ [   8    6    0    7    4    0    0    7   11  966]]
+
+Training client 2 model...
+Epoch 1/5, Loss: 0.2223
+Epoch 2/5, Loss: 0.2022
+Epoch 3/5, Loss: 0.1939
+Epoch 4/5, Loss: 0.1801
+Epoch 5/5, Loss: 0.1679
+
+Evaluating client 2 model...
+Test set: Loss: 0.0983, Accuracy: 0.9709, Precision: 0.9709, Recall: 0.9709, F1: 0.9709
+Confusion Matrix:
+[[ 972    0    0    1    0    1    2    3    1    0]
+ [   0 1125    3    1    0    0    3    1    2    0]
+ [   7    6  990    5    4    0    3   12    5    0]
+ [   0    0    4  981    0   12    0    9    4    0]
+ [   1    1    4    0  954    0    5    1    2   14]
+ [   3    1    0    6    1  872    5    1    1    2]
+ [   7    3    2    1    4    6  935    0    0    0]
+ [   1    6   12    3    2    0    0  996    2    6]
+ [   4    3    4    9    5   10    7    7  915   10]
+ [   3    6    0    7    9    3    1    8    3  969]]
+Traceback (most recent call last):
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\main.py", line 209, in <module>
+    main()
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\main.py", line 96, in main
+    privacy_explanation = federated_xai.explain_privacy_mechanism(
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\utils\federated_xai.py", line 262, in explain_privacy_mechanism
+    shap_values_before_privacy = explainer.shap_values(test_images.to(self.device))
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\shap\explainers\_gradient.py", line 144, in shap_values
+    return self.explainer.shap_values(X, nsamples, ranked_outputs, output_rank_order, rseed, return_variances)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\shap\explainers\_gradient.py", line 562, in shap_values
+    grads.append(self.gradient(find, batch))
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\shap\explainers\_gradient.py", line 444, in gradient
+    outputs = self.model(*X)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\models\model.py", line 20, in forward
+    x = self.conv2(x)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\conv.py", line 460, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\conv.py", line 456, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+KeyboardInterrupt

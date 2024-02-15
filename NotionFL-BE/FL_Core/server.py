@@ -1,5 +1,3 @@
-# FL_Core/server.py
-
 import json
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
@@ -12,7 +10,6 @@ class FLServer:
         self.global_model = global_model
         
     def set_global_model_state(self, state_dict):
-        """Temporarily sets the global model to the given state_dict."""
         self.global_model.load_state_dict(state_dict)
 
     def aggregate_client_updates(self, client_updates, aggregation_method='average'):
@@ -20,10 +17,8 @@ class FLServer:
         Aggregate the updates from the clients to update the global model.
         Currently, it supports simple averaging of the updates.
         """
-        # Assume all client updates are of the same structure
         global_dict = self.global_model.state_dict()
 
-        # Initialize a dictionary to store the aggregated update
         aggregated_updates = {k: torch.zeros_like(v) for k, v in global_dict.items()}
 
         # Aggregate updates

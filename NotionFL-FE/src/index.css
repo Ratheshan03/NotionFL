@@ -7,3 +7,26 @@
     flex-direction: column;
     min-height: 100vh;
   }
+
+
+
+
+/* src/Home.css */
+@keyframes logoAnimation {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+.logo-animation {
+  animation: logoAnimation 2s ease-in-out infinite;
+}

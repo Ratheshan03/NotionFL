@@ -1,10 +1,7 @@
-# FL_Core/client.py
-
 import copy
 import json
 import torch
 from .training import train_model, evaluate_model
-
 
 class FLClient:
     def __init__(self, client_id, model, train_loader, test_loader, device, data_collector=None):
@@ -21,15 +18,6 @@ class FLClient:
         if self.data_collector:
             self.data_collector.collect_client_training_logs(self.client_id, training_logs)
         return self.model.state_dict()
-    
-    def train_and_get_updates(self, epochs, lr):
-        initial_state = copy.deepcopy(self.model.state_dict())
-        self.train(epochs, lr)
-        final_state = self.model.state_dict()
-
-        # Calculate updates (deltas)
-        updates = {key: final_state[key] - initial_state[key] for key in final_state}
-        return updates
 
     def evaluate(self, round):
         print(f"\nEvaluating client {self.client_id} model...")
@@ -58,4 +46,14 @@ class FLClient:
         """
         self.model.load_state_dict(global_model_state_dict)
         self.model.to(self.device)
+        
+        
+    def train_and_get_updates(self, epochs, lr):
+        initial_state = copy.deepcopy(self.model.state_dict())
+        self.train(epochs, lr)
+        final_state = self.model.state_dict()
+
+        # Calculate updates (deltas)
+        updates = {key: final_state[key] - initial_state[key] for key in final_state}
+        return updates
 

@@ -9,7 +9,8 @@ def read_shapley_values(file_path):
 
 def calculate_incentives(shapley_values, total_incentive_pool):
     total_shapley = sum(shapley_values.values())
-    return {client_id: (value / total_shapley) * total_incentive_pool for client_id, value in shapley_values.items()}
+    return {client_id: (value / total_shapley) * total_incentive_pool 
+            for client_id, value in shapley_values.items()}
 
 def save_incentives_log(incentives, file_path):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)

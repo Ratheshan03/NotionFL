@@ -1,4 +1,3 @@
-# FL_Core/training.py
 import torch
 from torch import nn, optim
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix

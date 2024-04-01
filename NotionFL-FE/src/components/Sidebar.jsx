@@ -1,6 +1,6 @@
 // src/components/SideBar.js
 
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 
 const SideBar = ({ links }) => {
   return (

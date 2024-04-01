@@ -1,3 +1,4 @@
+import copy
 import os
 import shap
 import torch
@@ -9,15 +10,16 @@ import matplotlib.pyplot as plt
 from models.model import MNISTModel
 
 class FederatedXAI:
-    def __init__(self, data_collector_path, device):
+    def __init__(self, data_collector_path, device, global_model):
         self.data_collector_path = data_collector_path
         self.device = device
-        # Additional initialization as needed
+        self.global_model = global_model
+
     
     def explain_client_model(self, client_id, round_num, test_loader):
         model_path = self.data_collector_path + f"/client/localModels/client_{client_id}_model_round_{round_num}.pt"
         model_state_dict = torch.load(model_path)
-        model = MNISTModel()
+        model = copy.deepcopy(self.global_model)  # Use a copy of the global model
         model.load_state_dict(model_state_dict)
         model.to(self.device).eval()
 
@@ -43,11 +45,8 @@ class FederatedXAI:
         # Load the global model from the stored path
         global_model_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}.pt')
         global_model_state_dict = torch.load(global_model_path, map_location=self.device)
-        
-        # Initialize the global model
-        global_model = MNISTModel()  # Ensure this is the correct model class
-        global_model.load_state_dict(global_model_state_dict)
-        global_model.to(self.device).eval()
+        self.global_model.load_state_dict(global_model_state_dict)
+        self.global_model.eval()
 
         # Get a batch of data
         batch = next(iter(data_loader))
@@ -58,7 +57,7 @@ class FederatedXAI:
         test_images = images[50:64].to(self.device)  # Taking 14 images for test
 
         # Create the explainer
-        e = shap.GradientExplainer(global_model, background)
+        e = shap.GradientExplainer(self.global_model, background)
         shap_values = e.shap_values(test_images)
 
         # Convert SHAP values to a format suitable for plotting
@@ -97,12 +96,11 @@ class FederatedXAI:
         return plt
     
     
-    
     def compare_model_shap_values(self, round_num, num_clients, data_loader):
         explanations = {}
         global_model_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}.pt')
         global_model_state = torch.load(global_model_path)
-        global_model = MNISTModel()
+        global_model = self.global_model
         global_model.load_state_dict(global_model_state)
         global_model.to(self.device).eval()
 
@@ -121,7 +119,7 @@ class FederatedXAI:
                 continue  
 
             client_model_state = torch.load(client_model_path)
-            client_model = MNISTModel()
+            client_model = self.global_model
             client_model.load_state_dict(client_model_state)
             client_model.to(self.device).eval()
 
@@ -179,13 +177,13 @@ class FederatedXAI:
     def explain_aggregation(self, round_num, data_loader):
         # Load the global model before aggregation
         global_model_pre_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}_pre.pt')
-        global_model_pre = MNISTModel()
+        global_model_pre = self.global_model
         global_model_pre.load_state_dict(torch.load(global_model_pre_path))
         global_model_pre.to(self.device).eval()
 
         # Load the global model after aggregation
         global_model_post_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}_post.pt')
-        global_model_post = MNISTModel()
+        global_model_post = self.global_model
         global_model_post.load_state_dict(torch.load(global_model_post_path))
         global_model_post.to(self.device).eval()
 
@@ -242,14 +240,14 @@ class FederatedXAI:
         # Load the client's model before differential privacy noise is applied
         model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}.pt')
         model_state = torch.load(model_path)
-        model = MNISTModel()
+        model = copy.deepcopy(self.global_model)
         model.load_state_dict(model_state)
-        model.to(self.device).eval()
+        model.eval()
 
         # Load the client's model after differential privacy noise is applied
         private_model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}_private.pt')
         private_model_state = torch.load(private_model_path)
-        private_model = MNISTModel()
+        private_model = copy.deepcopy(self.global_model)
         private_model.load_state_dict(private_model_state)
         private_model.to(self.device).eval()
 
@@ -352,9 +350,6 @@ class FederatedXAI:
 
         plt.savefig(visualization_path)
         plt.close()
-
-    # Additional methods as needed...
-
 
 
     def generate_incentive_explanation(self, round_num):

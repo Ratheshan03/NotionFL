@@ -3,6 +3,7 @@ import time
 import torch
 import copy
 
+
 def fedavg_aggregate(global_state_dict, client_state_dicts):
     """
     Aggregate client models' state_dicts into a global model's state_dict using Federated Averaging.

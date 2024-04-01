@@ -79,7 +79,6 @@ class DataCollector:
         torch.save(model_update, update_path)
         
 
-
     def collect_client_model(self, client_id, model, round_num, suffix=''):
         client_models_dir = os.path.join(self.output_dir, 'client', 'localModels')
         model_filename = f"client_{client_id}_model_round_{round_num}{('_' + suffix) if suffix else ''}.pt"

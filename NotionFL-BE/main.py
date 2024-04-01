@@ -4,10 +4,10 @@ import os
 import shap
 import yaml
 import torch
-from FL_Core.data_manager import get_mnist_data_loaders, split_data_for_clients
+from FL_Core.data_manager import get_data_loaders, split_data_for_clients
 from FL_Core.client import FLClient
 from FL_Core.server import FLServer
-from models.model import MNISTModel
+from models.model import MNISTModel, CIFAR10Model
 from utils.secure_aggregation import fedavg_aggregate, average_model_states, calculate_variance, calculate_aggregation_time_and_resources
 from utils.privacy_module import apply_differential_privacy
 from utils.contribution_evaluation import calculate_shapley_values
@@ -16,28 +16,34 @@ from utils.federated_xai import FederatedXAI
 from utils.allocate_incentive import allocate_and_save_incentives
 
 def main():
-    # Load configurations from a YAML file
+    # Load training configurations from a YAML file
     with open('config.yml', 'r') as file:
         config = yaml.safe_load(file)
 
-    # Initialize DataCollector
-    data_collector = DataCollector(output_dir='output/data_collector')
-    federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'])
-    
     # Configuration parameters
+    dataset_name = config['dataset']  # Dataset name
     num_clients = config['num_clients']
     epochs = config['epochs']
     batch_size = config['batch_size']
     lr = config['learning_rate']
     
-    # Load data
-    train_loader, test_loader = get_mnist_data_loaders(batch_size=batch_size)
-    
+    # Load data based on dataset selection
+    train_loader, test_loader = get_data_loaders(dataset_name, batch_size=batch_size)
+
     # Split data among clients
     client_data_loaders = split_data_for_clients(train_loader.dataset, num_clients=num_clients, batch_size=batch_size)
 
-    # Initialize the global model
-    global_model = MNISTModel().to(config['device'])
+    # Initialize the global model based on dataset selection
+    if dataset_name == 'MNIST':
+        global_model = MNISTModel().to(config['device'])
+    elif dataset_name == 'CIFAR10':
+        global_model = CIFAR10Model().to(config['device'])
+    else:
+        raise ValueError(f"Dataset {dataset_name} not supported.")
+    
+    # Initialize DataCollector and FederatedXAI
+    data_collector = DataCollector(output_dir='output/data_collector')
+    federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'], global_model=global_model)
     
     # Initialize clients with DataCollector
     clients = [

@@ -3,7 +3,7 @@ import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 import copy
 import torch.nn as nn
-from models.model import MNISTModel
+from models.model import MNISTModel, CIFAR10Model
 
 class FLServer:
     def __init__(self, global_model):
@@ -105,26 +105,19 @@ class FLServer:
         return accuracy
     
     
-    def evaluate_model_state_dict(self, model_state_dict, test_loader, device):
-        """
-        Evaluate a model's performance given its state dictionary.
+    def evaluate_model_state_dict(self, model_state_dict, test_loader, device, dataset_name):
+        # Dynamically select the correct model class based on dataset name
+        if dataset_name == 'MNIST':
+            model = MNISTModel()
+        elif dataset_name == 'CIFAR10':
+            model = CIFAR10Model()
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset_name}")
+        # global_model_state_dict = self.global_model.state_dict()
+        model.load_state_dict(model_state_dict)
+        model.to(device)
+        return self.evaluate_model(model, test_loader, device)
 
-        Args:
-            model_state_dict (OrderedDict): The state dictionary of the model to evaluate.
-            test_loader (DataLoader): The test dataset loader.
-            device (torch.device): The device to perform evaluation on.
-
-        Returns:
-            float: The evaluation metric (e.g., accuracy).
-        """
-        # Create a new instance of the model and load the state dict
-       
-        
-        # Load state dict into the global model and evaluate
-        self.global_model.load_state_dict(model_state_dict)
-        self.global_model.to(device)
-        return self.evaluate_global_model(test_loader, device)
-    
     
     def evaluate_model(self, model, test_loader, device):
         """

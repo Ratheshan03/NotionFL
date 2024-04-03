@@ -175,49 +175,42 @@ class FederatedXAI:
         
 
     def explain_aggregation(self, round_num, data_loader):
-        # Load the global model before aggregation
+        # Load the global model before and after aggregation
         global_model_pre_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}_pre.pt')
-        global_model_pre = self.global_model
+        global_model_pre = copy.deepcopy(self.global_model)
         global_model_pre.load_state_dict(torch.load(global_model_pre_path))
         global_model_pre.to(self.device).eval()
 
-        # Load the global model after aggregation
         global_model_post_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}_post.pt')
-        global_model_post = self.global_model
+        global_model_post = copy.deepcopy(self.global_model)
         global_model_post.load_state_dict(torch.load(global_model_post_path))
         global_model_post.to(self.device).eval()
 
-        # Calculate SHAP values for the global model before and after aggregation
+        # Calculate SHAP values
         background, _ = next(iter(data_loader))
         background = background[:50].to(self.device)
         explainer_pre = shap.GradientExplainer(global_model_pre, background)
         explainer_post = shap.GradientExplainer(global_model_post, background)
         shap_values_pre = explainer_pre.shap_values(background)
         shap_values_post = explainer_post.shap_values(background)
-        
+
         # Reshape SHAP values if they are not in 2D format (for image data)
         def reshape_shap_values(shap_values):
             if isinstance(shap_values, list):
-                reshaped_values = []
-                for val in shap_values:
-                    if len(val.shape) > 2:
-                        reshaped_values.append(val.reshape(val.shape[0], -1))
-                    else:
-                        reshaped_values.append(val)
-                return reshaped_values
+                return [val.reshape(val.shape[0], -1) for val in shap_values]
             return shap_values
 
         shap_values_pre_reshaped = reshape_shap_values(shap_values_pre)
         shap_values_post_reshaped = reshape_shap_values(shap_values_post)
 
-        # Generate comparison plot between pre and post aggregation SHAP values
+        # Generate comparison plot
         plt.figure(figsize=(20, 10))
         plt.subplot(1, 2, 1)
-        shap.summary_plot(shap_values_pre_reshaped, feature_names=['Pixel ' + str(i) for i in range(28*28)], show=False)
+        shap.summary_plot(shap_values_pre_reshaped, show=False)
         plt.title('Global Model Pre-Aggregation')
 
         plt.subplot(1, 2, 2)
-        shap.summary_plot(shap_values_post_reshaped, feature_names=['Pixel ' + str(i) for i in range(28*28)], show=False)
+        shap.summary_plot(shap_values_post_reshaped, show=False)
         plt.title('Global Model Post-Aggregation')
 
         # Save the plot
@@ -226,7 +219,6 @@ class FederatedXAI:
         plt.savefig(comparison_plot_path)
         plt.close()
 
-        # Prepare the explanation data
         aggregation_explanation = {
             'global_pre': shap_values_pre_reshaped,
             'global_post': shap_values_post_reshaped,

@@ -86,6 +86,7 @@ class DataCollector:
         os.makedirs(client_models_dir, exist_ok=True)
         
         torch.save(model, model_path)
+        
 
     def collect_global_model_metrics(self, round_num, model_metrics):
         # Convert the metrics tuple into a dictionary
@@ -149,6 +150,7 @@ class DataCollector:
         plot_path = os.path.join(contribution_metrics_dir, f"client_contribution_plot_round_{round_num + 1}.png")
         plt.savefig(plot_path)
         plt.close()
+        
 
     def collect_secure_aggregation_logs(self, round_num, aggregation_metrics, time_overheads):
         """
@@ -340,6 +342,3 @@ class DataCollector:
         with open(incentives_log_path, 'w') as file:
             json.dump(incentives, file, indent=4)
 
-
-
-    # Additional methods for saving, loading, and processing the collected data can be added as needed

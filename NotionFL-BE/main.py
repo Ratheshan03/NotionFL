@@ -166,34 +166,34 @@ def main():
             # Optionally save global model metrics
             data_collector.collect_global_model_metrics(round, global_metrics)
             
-        # Define the model evaluation function
-        model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'])[1]  # This extracts only the accuracy
+        
+    # Save the global model after all rounds of training
+    data_collector.collect_global_model(global_model.cpu().state_dict(), round)
+    
+    # Define the model evaluation function
+    model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'], dataset_name)
 
-        # Define the averaging function
-        averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
+    # Define the averaging function
+    averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
 
-        # Calculate Shapley Values
-        shapley_values = calculate_shapley_values(
+    # Calculate Shapley Values
+    shapley_values = calculate_shapley_values(
             round_num=round,
             num_clients=num_clients,
             data_collector_path=data_collector.output_dir,
             model_evaluation_func=model_evaluation_func,
             averaging_func=averaging_func,
             device=config['device']
-        )
-        print(f"Shapley Values for round {round + 1}: {shapley_values}")
+    )
+    print(f"Shapley Values for round {round + 1}: {shapley_values}")
 
-        # Optionally save Shapley values
-        data_collector.collect_contribution_eval_metrics(round, shapley_values)
+    # Optionally save Shapley values
+    data_collector.collect_contribution_eval_metrics(round, shapley_values)
         
-        # Allocate incentives based on Shapley values
-        allocate_and_save_incentives(round+1)
-        # Call the function to generate and save the explanation
-        federated_xai.generate_incentive_explanation(round+1)
-
-
-    # Save the global model after all rounds of training
-    data_collector.collect_global_model(global_model.cpu().state_dict(), round)
+    # Allocate incentives based on Shapley values
+    allocate_and_save_incentives(round+1)
+    # Call the function to generate and save the explanation
+    federated_xai.generate_incentive_explanation(round+1)
     
     # Explain the global model using SHAP
     shap_numpy, test_numpy = federated_xai.explain_global_model(round, test_loader)

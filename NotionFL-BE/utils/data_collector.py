@@ -186,43 +186,9 @@ class DataCollector:
         os.makedirs(privacy_dir, exist_ok=True)
         with open(file_path, 'w') as file:
             json.dump(dp_metrics, file, indent=4)
-
-
-    def save_shap_explanation_plot(self, shap_values, test_images, client_id, round_num):
-            """
-            Save SHAP explanation plot for a given client model.
-
-            Args:
-                shap_values: The SHAP values for the explanation.
-                test_images: The images used for the explanation.
-                client_id (int): The unique identifier of the client.
-                round_num (int): The current round number in federated learning.
-            """
-            # Create directory for storing SHAP explanation plots
-            shap_plots_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', f'client_{client_id}')
-            os.makedirs(shap_plots_dir, exist_ok=True)
-
-            # File path for the plot
-            plot_path = os.path.join(shap_plots_dir, f"shap_explanation_round_{round_num+1}.png")
-
-            # Generate the plot
-            shap.image_plot(shap_values, -test_images)
-
-            # Save the plot
-            plt.savefig(plot_path)
-            plt.close()
     
     
-    def save_shap_explanation_plot(self, shap_values, test_images, model_type, round_num):
-        """
-        Save SHAP explanation plot for the given model (client or global).
-
-        Args:
-            shap_values: The SHAP values for the explanation.
-            test_images: The images used for the explanation.
-            model_type (str): 'client_{client_id}' or 'global' to specify the model type.
-            round_num (int): The current round number in federated learning.
-        """
+    def save_shap_explanation_plot(self, shap_plot, model_type, round_num):
         # Create directory for storing SHAP explanation plots
         shap_plots_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', model_type)
         os.makedirs(shap_plots_dir, exist_ok=True)
@@ -230,12 +196,10 @@ class DataCollector:
         # File path for the plot
         plot_path = os.path.join(shap_plots_dir, f"shap_explanation_round_{round_num}.png")
 
-        # Generate the plot
-        shap.image_plot(shap_values, -test_images)
-
         # Save the plot
-        plt.savefig(plot_path)
-        plt.close()
+        shap_plot.savefig(plot_path)
+        plt.close(shap_plot)
+
         
         
     def save_comparison_plot(self, plot, round_num):
@@ -252,7 +216,7 @@ class DataCollector:
         file_path = os.path.join(plot_save_dir, f'comparison_plot_round_{round_num}.png')
     
         plot.savefig(file_path)
-        
+
         
         
     def save_evaluation_plot(self, plot_path, client_id, round_num):
@@ -267,72 +231,45 @@ class DataCollector:
         if os.path.abspath(plot_path) != os.path.abspath(final_plot_path):
             # Move the plot file to the final directory if it's not already there
             shutil.move(plot_path, final_plot_path)
-    
-
-    def collect_global_model(self, global_model_state, round_num, suffix=''):
-        """
-        Collect and store the global model state after each round.
-
-        Args:
-            global_model_state (OrderedDict): The state dictionary of the global model.
-            round_num (int): The current round number in the Federated Learning process.
-            suffix (str): Additional string to append to the filename (e.g., 'pre' or 'post').
-        """
-        suffix_str = f"_{suffix}" if suffix else ""
-        global_model_dir = os.path.join(self.output_dir, 'global', 'models')
-        file_path = os.path.join(global_model_dir, f'global_model_round_{round_num}{suffix_str}.pt')
-        os.makedirs(global_model_dir, exist_ok=True)
-        
-        torch.save(global_model_state, file_path)
+            
         
         
-    def save_aggregation_explanation(self, aggregated_explanation, round_num):
+    def save_aggregation_explanation(self, aggregation_plot, round_num):
         """
-        Save the explanations for the aggregation process.
+        Save the aggregation plot.
 
         Args:
-            aggregated_explanation (dict): The explanations to save, typically SHAP values or visualizations.
-            round_num (int): The current round number of federated learning.
+            aggregation_plot (BytesIO): The buffer containing the aggregation plot image.
+            round_num (int): The current round number in federated learning.
         """
         agg_explanation_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', 'aggregation_explanation')
         os.makedirs(agg_explanation_dir, exist_ok=True)
-        
-        # Convert SHAP values to lists for JSON serialization
-        pre_agg_shap_values = [shap_value.tolist() for shap_value in aggregated_explanation.get('global_pre', [])]
-        post_agg_shap_values = [shap_value.tolist() for shap_value in aggregated_explanation.get('global_post', [])]
 
-        # Save the raw SHAP values data as JSON
-        shap_values_path = os.path.join(agg_explanation_dir, f'shap_values_round_{round_num}.json')
-        with open(shap_values_path, 'w') as file:
-            json.dump({
-                'pre_agg_shap_values': pre_agg_shap_values,
-                'post_agg_shap_values': post_agg_shap_values
-            }, file, indent=4)
-            
-        print(f"Aggregation explanation for round {round_num} saved successfully.")
+        # Path for saving the plot
+        plot_path = os.path.join(agg_explanation_dir, f'aggregation_plot_round_{round_num}.png')
+
+        # Save the plot from the buffer
+        with open(plot_path, 'wb') as file:
+            file.write(aggregation_plot.getbuffer())
+
+        print(f"Aggregation plot for round {round_num} saved successfully.")
+
 
     
-    def save_privacy_explanations(self, privacy_explanation, client_id, round_num):
-        privacy_explanation_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', 'privacy_explanations')
-        os.makedirs(privacy_explanation_dir, exist_ok=True)
-        privacy_explanation_path = os.path.join(privacy_explanation_dir, f'client_{client_id}_privacy_explanation_round_{round_num}.json')
+    def save_privacy_explanations(self, explanation_text, plot_buffer, client_id, round_num):
+        # Save textual explanation
+        interpretation_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', 'privacy_explanations')
+        os.makedirs(interpretation_dir, exist_ok=True)
+        interpretation_path = os.path.join(interpretation_dir, f'interpretation_client_{client_id}_round_{round_num}.txt')
+        with open(interpretation_path, 'w') as file:
+            file.write(explanation_text)
 
-        with open(privacy_explanation_path, 'w') as file:
-            json.dump(privacy_explanation, file, indent=4)
-            
-
-    def save_privacy_explanation(self, privacy_explanation, round_num):
-        # Ensure the directory exists
-        privacy_explanation_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', 'privacy_explanations')
-        os.makedirs(privacy_explanation_dir, exist_ok=True)
-
-        # Construct the full path for saving the explanation
-        explanation_path = os.path.join(privacy_explanation_dir, f'privacy_explanation_round_{round_num}.json')
-
-        # Save the explanation
-        with open(explanation_path, 'w') as file:
-            json.dump(privacy_explanation, file, indent=4)
-            
+        # Save visualization plot
+        visualization_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', 'privacy_explanations', 'visualizations')
+        os.makedirs(visualization_dir, exist_ok=True)
+        visualization_path = os.path.join(visualization_dir, f'impact_visualization_client_{client_id}_round_{round_num}.png')
+        with open(visualization_path, 'wb') as f:
+            f.write(plot_buffer.getvalue())
             
             
     def collect_incentives_log(self, round_num, incentives):

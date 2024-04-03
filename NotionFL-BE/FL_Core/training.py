@@ -1,4 +1,5 @@
 import torch
+import logging
 from torch import nn, optim
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
@@ -22,9 +23,9 @@ def train_model(model, train_loader, epochs, lr, device):
             total_loss += loss.item()
         
         avg_loss = total_loss / len(train_loader)
-        print(f'Epoch {epoch+1}/{epochs}, Loss: {avg_loss:.4f}')
+        logging.info(f'Epoch {epoch+1}/{epochs}, Loss: {avg_loss:.4f}')
         
-        # Add epoch loss to training logs
+        # Adding training logs
         training_logs.append({'epoch': epoch + 1, 'loss': avg_loss})
 
     return model, training_logs
@@ -58,7 +59,7 @@ def evaluate_model(model, test_loader, device):
     f1 = f1_score(all_targets, all_predictions, average='weighted')
     conf_matrix = confusion_matrix(all_targets, all_predictions)
 
-    print(f'Test set: Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}')
-    print(f'Confusion Matrix:\n{conf_matrix}')
+    logging.info(f'Test set: Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}')
+    logging.info(f'Confusion Matrix:\n{conf_matrix}')
     
     return test_loss, accuracy, precision, recall, f1, conf_matrix

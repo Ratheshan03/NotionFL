@@ -1,6 +1,7 @@
 import copy
 import json
 import torch
+import logging
 from .training import train_model, evaluate_model
 
 class FLClient:
@@ -13,14 +14,23 @@ class FLClient:
         self.data_collector = data_collector
 
     def train(self, epochs, lr):
-        print(f"\nTraining client {self.client_id} model...")
+        logging.info(f"\nTraining client {self.client_id} model...")
         self.model, training_logs = train_model(self.model, self.train_loader, epochs, lr, self.device)
         if self.data_collector:
             self.data_collector.collect_client_training_logs(self.client_id, training_logs)
         return self.model.state_dict()
+    
+    def train_and_get_updates(self, epochs, lr):
+        initial_state = copy.deepcopy(self.model.state_dict())
+        self.train(epochs, lr)
+        final_state = self.model.state_dict()
+
+        # Calculate updates (deltas)
+        updates = {key: final_state[key] - initial_state[key] for key in final_state}
+        return updates
 
     def evaluate(self, round):
-        print(f"\nEvaluating client {self.client_id} model...")
+        logging.info(f"\nEvaluating client {self.client_id} model...")
         metrics = evaluate_model(self.model, self.test_loader, self.device)
         test_loss, accuracy, precision, recall, f1, conf_matrix = metrics
 
@@ -48,12 +58,5 @@ class FLClient:
         self.model.to(self.device)
         
         
-    def train_and_get_updates(self, epochs, lr):
-        initial_state = copy.deepcopy(self.model.state_dict())
-        self.train(epochs, lr)
-        final_state = self.model.state_dict()
-
-        # Calculate updates (deltas)
-        updates = {key: final_state[key] - initial_state[key] for key in final_state}
-        return updates
+    
 

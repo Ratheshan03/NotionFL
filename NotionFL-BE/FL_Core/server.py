@@ -73,7 +73,7 @@ class FLServer:
         return test_loss, accuracy, precision, recall, f1, conf_matrix
     
     
-    def evaluate_model_state(self, model_state, test_loader, device, model_template):
+    def evaluate_model_state(self, model_state, test_loader, device):
         """
         Evaluate a model state using the test data loader.
 
@@ -86,7 +86,7 @@ class FLServer:
         Returns:
         float: The evaluation metric (e.g., accuracy) of the model.
         """
-        model = copy.deepcopy(model_template)
+        model = copy.deepcopy(self.global_model)
         model.load_state_dict(model_state)
         model.to(device)
         model.eval()

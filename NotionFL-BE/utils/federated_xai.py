@@ -1,4 +1,5 @@
 import copy
+import io
 import os
 import shap
 import torch
@@ -39,7 +40,12 @@ class FederatedXAI:
         shap_numpy = [np.swapaxes(np.swapaxes(s, 1, -1), 1, 2) for s in shap_values]
         test_numpy = np.swapaxes(np.swapaxes(test_images.cpu().numpy(), 1, -1), 1, 2)
 
-        return (shap_numpy, test_numpy)
+        # Generate the SHAP plot
+        shap_plot = plt.figure()
+        shap.image_plot(shap_values, -test_images)
+
+        return shap_plot, (shap_numpy, test_numpy)
+    
 
     def explain_global_model(self, round_num, data_loader):
         # Load the global model from the stored path
@@ -112,10 +118,10 @@ class FederatedXAI:
             global_explainer = shap.GradientExplainer(global_model, background)
             global_shap_values = global_explainer.shap_values(background)
             
-            print(f"Comparing client {client_id} and global model shap values")  # Logging for debugging
+            print(f"Comparing client {client_id} and global model shap values")
             client_model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}.pt')
             if not os.path.exists(client_model_path):
-                print(f"Client model file not found: {client_model_path}")  # More detailed logging
+                print(f"Client model file not found: {client_model_path}")
                 continue  
 
             client_model_state = torch.load(client_model_path)
@@ -174,16 +180,14 @@ class FederatedXAI:
         return impact_evaluation
         
 
-    def explain_aggregation(self, round_num, data_loader):
-        # Load the global model before and after aggregation
-        global_model_pre_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}_pre.pt')
+    def explain_aggregation(self, pre_aggregated_state, post_aggregated_state, data_loader, round_num):
+        # Load the global model states into new model instances
         global_model_pre = copy.deepcopy(self.global_model)
-        global_model_pre.load_state_dict(torch.load(global_model_pre_path))
+        global_model_pre.load_state_dict(pre_aggregated_state)
         global_model_pre.to(self.device).eval()
 
-        global_model_post_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}_post.pt')
         global_model_post = copy.deepcopy(self.global_model)
-        global_model_post.load_state_dict(torch.load(global_model_post_path))
+        global_model_post.load_state_dict(post_aggregated_state)
         global_model_post.to(self.device).eval()
 
         # Calculate SHAP values
@@ -213,105 +217,53 @@ class FederatedXAI:
         shap.summary_plot(shap_values_post_reshaped, show=False)
         plt.title('Global Model Post-Aggregation')
 
-        # Save the plot
-        comparison_plot_path = os.path.join(self.data_collector_path, 'FedXAIEvaluation', 'aggregation_explanation', f'comparison_plot_round_{round_num}.png')
-        os.makedirs(os.path.dirname(comparison_plot_path), exist_ok=True)
-        plt.savefig(comparison_plot_path)
+       # Save plot to a buffer
+        plot_buffer = io.BytesIO()
+        plt.savefig(plot_buffer, format='png')
         plt.close()
+        plot_buffer.seek(0)
 
-        aggregation_explanation = {
-            'global_pre': shap_values_pre_reshaped,
-            'global_post': shap_values_post_reshaped,
-            'comparison_plot': comparison_plot_path
-        }
+        return plot_buffer
 
-        return aggregation_explanation
+    
+    def explain_privacy_impact(self, client_id, round_num, test_loader, privacy_params):
+        """
+        Explain, evaluate, interpret, and generate visualizations for the impact 
+        of differential privacy on a client's model.
 
+        Args:
+            client_id: ID of the client.
+            round_num: The current round of training.
+            test_loader: DataLoader for the test set.
+            privacy_params: Parameters used for differential privacy.
 
-    def explain_privacy_mechanism(self, client_id, round_num, test_loader, privacy_info):
-        # Load the client's model before differential privacy noise is applied
-        model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}.pt')
-        model_state = torch.load(model_path)
-        model = copy.deepcopy(self.global_model)
-        model.load_state_dict(model_state)
-        model.eval()
+        Returns:
+            A tuple containing the interpretation text and the visualization plot.
+        """
+        # Load models before and after applying differential privacy
+        model = self.load_model(client_id, round_num, suffix="")
+        private_model = self.load_model(client_id, round_num, suffix="_private")
 
-        # Load the client's model after differential privacy noise is applied
-        private_model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}_private.pt')
-        private_model_state = torch.load(private_model_path)
-        private_model = copy.deepcopy(self.global_model)
-        private_model.load_state_dict(private_model_state)
-        private_model.to(self.device).eval()
-
-        # Create an explainer with a background dataset
+        # Prepare the explainer
         background, _ = next(iter(test_loader))
         explainer = shap.GradientExplainer(model, background[:50].to(self.device))
 
-        # Explain the model's predictions using SHAP values on a subset of test data
+        # Explain both models
         test_images, _ = next(iter(test_loader))
-        shap_values_before_privacy = explainer.shap_values(test_images.to(self.device))
-
-        # Now explain the private model's predictions
+        shap_values = explainer.shap_values(test_images.to(self.device))
         explainer.model = private_model
-        shap_values_after_privacy = explainer.shap_values(test_images.to(self.device))
+        private_shap_values = explainer.shap_values(test_images.to(self.device))
 
-        # Compare SHAP values to evaluate the impact of differential privacy
-        impact_of_privacy = self.evaluate_privacy_impact(shap_values_before_privacy, shap_values_after_privacy, privacy_info)
-
-        # Store the comparison of SHAP values for later analysis or visualization
-        privacy_explanation_path = os.path.join(self.data_collector_path, 'FedXAIEvaluation', 'privacy_explanations', f'client_{client_id}_privacy_explanation_round_{round_num}.json')
-        os.makedirs(os.path.dirname(privacy_explanation_path), exist_ok=True)
-        with open(privacy_explanation_path, 'w') as file:
-            json.dump(impact_of_privacy, file)
-
-        return impact_of_privacy
-
-    
-    
-    def evaluate_privacy_impact(self, shap_values_without_privacy, shap_values_with_privacy, privacy_params):
-        # Convert SHAP values to numpy arrays
-        shap_values_without_privacy = np.array(shap_values_without_privacy)
-        shap_values_with_privacy = np.array(shap_values_with_privacy)
-
-        # Ensure SHAP values have the same shape
-        assert shap_values_without_privacy.shape == shap_values_with_privacy.shape, "Shape mismatch in SHAP values"
-
-        # Calculate the absolute difference in SHAP values for each feature
-        diff_shap_values = np.abs(shap_values_without_privacy - shap_values_with_privacy)
-
-        # Calculate the mean difference for each feature
+        # Calculate differences in SHAP values
+        diff_shap_values = np.abs(np.array(shap_values) - np.array(private_shap_values))
         feature_diff = diff_shap_values.mean(axis=0)
-
-        # Aggregate impact information
-        impact_summary = {
-            'mean_diff': np.mean(diff_shap_values),
-            'max_diff': np.max(diff_shap_values),
-            'privacy_noise': privacy_params,
-            'feature_diff': feature_diff.tolist()  # Convert numpy array to list for JSON serialization
-        }
-
-        return impact_summary
-
-
-    def interpret_privacy_impact(self, round_num, client_id):
-        # Load DP explanation results
-        privacy_explanation_path = os.path.join(self.data_collector_path, 'FedXAIEvaluation', 'privacy_explanations', f'client_{client_id}_privacy_explanation_round_{round_num}.json')
-        with open(privacy_explanation_path, 'r') as file:
-            dp_results = json.load(file)
-
-        mean_diff = dp_results['mean_diff']
-        max_diff = dp_results['max_diff']
-        privacy_noise = dp_results['privacy_noise']
-        feature_diff = np.array(dp_results['feature_diff'])
-
-        # Flatten feature_diff if it's multidimensional (for image data)
-        if feature_diff.ndim > 1:
-            feature_diff = feature_diff.flatten()
-
-        # Generate the indices for each feature
-        feature_indices = np.arange(feature_diff.shape[0])
-
-        # Generate detailed textual explanation
+        
+        mean_diff = np.mean(diff_shap_values)
+        max_diff = np.max(diff_shap_values)
+        privacy_noise = privacy_params
+        feature_diff = feature_diff.tolist()
+       
+        # Interpretation Text
         interpretation_text = f"Client {client_id} Differential Privacy Analysis for Round {round_num}:\n"
         interpretation_text += f"The mean difference in SHAP values, averaging at {mean_diff:.4f}, indicates the average change in feature importance due to the applied differential privacy noise. A lower mean difference suggests that the model's interpretability remains stable even after introducing privacy-preserving noise.\n\n"
         interpretation_text += f"The maximum difference in SHAP values reached {max_diff:.4f}, reflecting the largest alteration in any single feature's importance. This metric helps identify if any specific feature's interpretability is significantly impacted by the privacy mechanism.\n\n"
@@ -319,29 +271,41 @@ class FederatedXAI:
         interpretation_text += "Privacy-Impact Trade-offs: This round's differential privacy implementation demonstrates a balance where the model maintains reasonable interpretability while providing privacy protection. Adjustments to the noise level may be considered based on the desired privacy-accuracy trade-off.\n\n"
         interpretation_text += "Feature Analysis: Investigating specific features with high SHAP value differences can provide insights into how differential privacy affects the model's reliance on certain features. This analysis is crucial for understanding the model's robustness under privacy constraints.\n"
 
-        # Ensure directory for saving textual explanation
-        interpretation_dir = os.path.join(self.data_collector_path,  'FedXAIEvaluation', 'privacy_explanations')
-        os.makedirs(interpretation_dir, exist_ok=True)
-        interpretation_path = os.path.join(interpretation_dir, f'interpretation_client_{client_id}_round_{round_num}.txt')
-
-        # Save the textual explanation
-        with open(interpretation_path, 'w') as file:
-            file.write(interpretation_text)
-
-        # Generate and save visualizations
-        plt.figure(figsize=(10, 6))  # Adjust the figure size as needed
+        # Visualization
+        feature_indices = np.arange(len(feature_diff))
+        plt.figure(figsize=(10, 6))
         plt.bar(feature_indices, feature_diff)
         plt.xlabel('Feature Index')
         plt.ylabel('Difference in SHAP Value')
         plt.title(f'Impact of DP on Client {client_id} Model Features')
-
-        # Ensure directory for saving visualization
-        visualization_dir = os.path.join(self.data_collector_path, 'FedXAIEvaluation', 'privacy_explanations', 'visualizations')
-        os.makedirs(visualization_dir, exist_ok=True)
-        visualization_path = os.path.join(visualization_dir, f'impact_visualization_client_{client_id}_round_{round_num}.png')
-
-        plt.savefig(visualization_path)
+        
+        # Save plot to a buffer
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
         plt.close()
+
+        return interpretation_text, buf
+        
+    
+    def load_model(self, client_id, round_num, suffix):
+        """
+        Load a client's model based on the round number and suffix.
+
+        Args:
+            client_id: ID of the client.
+            round_num: The current round of training.
+            suffix: Suffix for the model filename (e.g., '_private').
+
+        Returns:
+            A loaded PyTorch model.
+        """
+        model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}{suffix}.pt')
+        model_state = torch.load(model_path)
+        model = copy.deepcopy(self.global_model)
+        model.load_state_dict(model_state)
+        model.to(self.device).eval()
+        return model
 
 
     def generate_incentive_explanation(self, round_num):

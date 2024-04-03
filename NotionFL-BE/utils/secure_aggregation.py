@@ -2,11 +2,11 @@ import os
 import time
 import torch
 import copy
+import psutil
 
-
-def fedavg_aggregate(global_state_dict, client_state_dicts):
+def perform_fedavg_aggregation(global_state_dict, client_state_dicts):
     """
-    Aggregate client models' state_dicts into a global model's state_dict using Federated Averaging.
+    Perform Federated Averaging aggregation, calculate time taken, and estimate computational resources.
 
     Args:
         global_state_dict (OrderedDict): The state_dict of the global model to be updated.
@@ -14,20 +14,36 @@ def fedavg_aggregate(global_state_dict, client_state_dicts):
 
     Returns:
         OrderedDict: Updated state_dict for the global model.
+        dict: Aggregation time and estimated computational resources.
     """
-    # Ensure there is at least one client state_dict provided for aggregation
     if not client_state_dicts:
         raise ValueError("No client model state_dicts provided for aggregation.")
 
+    start_time = time.time()
+    start_memory = psutil.virtual_memory() 
+
     num_clients = len(client_state_dicts)
+    aggregated_state_dict = copy.deepcopy(global_state_dict)
 
     # Aggregate each parameter
-    for key in global_state_dict.keys():
-        # Sum the parameter values from each client state_dict
-        avg_param = sum(client_state_dict[key] for client_state_dict in client_state_dicts) / num_clients
-        global_state_dict[key] = avg_param
+    for key in aggregated_state_dict.keys():
+        aggregated_state_dict[key] = sum(client_state_dict[key] for client_state_dict in client_state_dicts) / num_clients
 
-    return global_state_dict
+    end_time = time.time()
+    end_memory = psutil.virtual_memory()
+    memory_used = start_memory.used - end_memory.used
+
+    time_overheads = {
+        'aggregation_time': end_time - start_time,
+        'computational_resources': {
+            'cpu_usage': os.cpu_count(),
+            'memory_usage': memory_used,
+            # 'gpu_usage': ...   
+        }
+    }
+
+    return aggregated_state_dict, time_overheads
+
 
 
 def average_model_states(base_model, model_states):
@@ -57,7 +73,11 @@ def average_model_states(base_model, model_states):
 
 
 def calculate_variance(models):
-    """ Calculate the variance among a list of model state_dicts. """
+    """ 
+    Calculate the variance among a list of model state_dicts. 
+    provides insights into how diverse the client models are.
+    
+    """
     sum_state_dict = None
     for model in models:
         if sum_state_dict is None:
@@ -72,31 +92,3 @@ def calculate_variance(models):
         for k, v in model.items():
             variance += ((v - mean_state_dict[k]) ** 2).sum().item()
     return variance / len(models)
-
-
-def calculate_aggregation_time_and_resources(global_state_dict, client_state_dicts):
-    """
-    Calculate the time taken for aggregation and estimate computational resources used.
-
-    Args:
-        global_state_dict (OrderedDict): The state_dict of the global model to be updated.
-        client_state_dicts (list of OrderedDict): List of state_dicts from client models.
-
-    Returns:
-        dict: Aggregation time and estimated computational resources.
-    """
-    start_time = time.time()
-    aggregated_state_dict = fedavg_aggregate(global_state_dict, client_state_dicts)
-    end_time = time.time()
-
-    time_overheads = {
-        'aggregation_time': end_time - start_time,
-        'computational_resources': {
-            'cpu_usage': os.cpu_count(),  # Example metric, you can add more complex metrics here
-            # 'memory_usage': ...,  # Additional resource metrics can be added
-            # 'gpu_usage': ...      # If GPUs are involved
-        }
-    }
-    
-    return aggregated_state_dict, time_overheads
-

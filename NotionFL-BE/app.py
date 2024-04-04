@@ -26,7 +26,6 @@ COMPARISON_PLOTS_DIR = os.path.join(DATA_COLLECTOR_DIR, 'FedXAIEvaluation', 'com
 GLOBAL_SHAP_DIR = os.path.join(DATA_COLLECTOR_DIR, 'FedXAIEvaluation', 'global')
 
 
-
 @app.route('/get_global_evaluation/<round_number>', methods=['GET'])
 def get_global_evaluation(round_number):
     json_filename = f'global_model_round_{round_number}.json'
@@ -269,8 +268,6 @@ def getGlobalModel(round_number):
         return jsonify({"error": "Final global model not found"}), 404
     
 
-    
-    
     
 @app.route('/privacy_data/<int:client_id>/<int:round_number>', methods=['GET'])
 def get_privacy_data(round_number, client_id):

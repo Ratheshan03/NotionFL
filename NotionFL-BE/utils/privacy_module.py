@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import time
-import logging
 
 def apply_differential_privacy(model_parameters, clip_threshold, noise_multiplier, device):
     """
@@ -27,4 +26,5 @@ def apply_differential_privacy(model_parameters, clip_threshold, noise_multiplie
             noise_stats.append({'mean': 0, 'std': noise_multiplier * clip_threshold, 'variance': (noise_multiplier * clip_threshold)**2})
 
     computation_time = time.time() - start_time
+    
     return {'noise_stats': noise_stats, 'computation_time': computation_time}

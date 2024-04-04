@@ -8,72 +8,98 @@ import numpy as np
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
-from models.model import MNISTModel
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import logging
 
 class FederatedXAI:
-    def __init__(self, data_collector_path, device, global_model):
+    def __init__(self, data_collector_path, device, global_model, server):
         self.data_collector_path = data_collector_path
         self.device = device
         self.global_model = global_model
-
-    
-    def explain_client_model(self, client_id, round_num, test_loader):
-        model_path = self.data_collector_path + f"/client/localModels/client_{client_id}_model_round_{round_num}.pt"
-        model_state_dict = torch.load(model_path)
-        model = copy.deepcopy(self.global_model)  # Use a copy of the global model
-        model.load_state_dict(model_state_dict)
+        self.server = server
+        
+        
+    def explain_client_model(self, client_model_state, client_id, test_loader):
+        # Load client model state
+        model = copy.deepcopy(self.global_model)
+        model.load_state_dict(client_model_state)
         model.to(self.device).eval()
 
-        # Get a batch of data
+        accuracy = self.server.evaluate_model(model, test_loader, self.device)
+        evaluation_text = f"Client {client_id} Model Evaluation\nAccuracy: {accuracy:.2f}\n\n"
+
+        # Get a batch of data for SHAP explanation
         batch = next(iter(test_loader))
         images, _ = batch
 
-        # Use images for explanation
+        # Use images for SHAP explanation
         background = images[:50].to(self.device)
         test_images = images[50:64].to(self.device)
 
-        # Create the explainer
-        e = shap.GradientExplainer(model, background)
-        shap_values = e.shap_values(test_images)
+        # Create the SHAP explainer
+        explainer = shap.GradientExplainer(model, background)
+        shap_values = explainer.shap_values(test_images)
 
-        # Convert SHAP values to a format suitable for plotting
+        # Convert SHAP values for plotting
         shap_numpy = [np.swapaxes(np.swapaxes(s, 1, -1), 1, 2) for s in shap_values]
         test_numpy = np.swapaxes(np.swapaxes(test_images.cpu().numpy(), 1, -1), 1, 2)
 
         # Generate the SHAP plot
-        shap_plot = plt.figure()
-        shap.image_plot(shap_values, -test_images)
+        shap_plot_buf = io.BytesIO()
+        plt.figure()
+        shap.image_plot(shap_numpy, -test_numpy)
+        plt.savefig(shap_plot_buf, format='png')
+        shap_plot_buf.seek(0)
+        plt.close()
 
-        return shap_plot, (shap_numpy, test_numpy)
+        return evaluation_text, shap_plot_buf, (shap_numpy, test_numpy)
+
     
 
-    def explain_global_model(self, round_num, data_loader):
-        # Load the global model from the stored path
-        global_model_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}.pt')
-        global_model_state_dict = torch.load(global_model_path, map_location=self.device)
-        self.global_model.load_state_dict(global_model_state_dict)
-        self.global_model.eval()
+    def explain_global_model(self, test_loader):
+        # Evaluate the global model's performance using the server's method
+        test_loss, accuracy, precision, recall, f1, conf_matrix = self.server.evaluate_global_model(test_loader, self.device)
+        evaluation_text = f"Global Model Evaluation\nAccuracy: {accuracy:.2f}, Loss: {test_loss:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}\n\n"
 
-        # Get a batch of data
-        batch = next(iter(data_loader))
+        # Generate the confusion matrix plot
+        fig_conf_matrix = plt.figure(figsize=(8, 8))
+        ax = fig_conf_matrix.add_subplot(111)
+        ConfusionMatrixDisplay(conf_matrix).plot(ax=ax)
+        plt.title("Confusion Matrix")
+
+        # Save confusion matrix plot to a buffer
+        buf_conf_matrix = io.BytesIO()
+        plt.savefig(buf_conf_matrix, format='png')
+        buf_conf_matrix.seek(0)
+        plt.close(fig_conf_matrix)
+
+        # Get a batch of data for SHAP explanation
+        batch = next(iter(test_loader))
         images, _ = batch
 
-        # Use images for explanation
+        # Use images for SHAP explanation
         background = images[:50].to(self.device)
-        test_images = images[50:64].to(self.device)  # Taking 14 images for test
+        test_images = images[50:64].to(self.device)
 
-        # Create the explainer
-        e = shap.GradientExplainer(self.global_model, background)
-        shap_values = e.shap_values(test_images)
+        # Create the SHAP explainer
+        explainer = shap.GradientExplainer(self.global_model, background)
+        shap_values = explainer.shap_values(test_images)
 
-        # Convert SHAP values to a format suitable for plotting
+        # Convert SHAP values for plotting
         shap_numpy = [np.swapaxes(np.swapaxes(s, 1, -1), 1, 2) for s in shap_values]
         test_numpy = np.swapaxes(np.swapaxes(test_images.cpu().numpy(), 1, -1), 1, 2)
 
-        return shap_numpy, test_numpy
+        shap_plot_buf = io.BytesIO()
+        plt.figure()
+        shap.image_plot(shap_numpy, -test_numpy)
+        plt.savefig(shap_plot_buf, format='png')
+        shap_plot_buf.seek(0)
+        plt.close()
+        
+        return evaluation_text, buf_conf_matrix, shap_plot_buf, (shap_numpy, test_numpy)
         
         
-
     def compare_models(self, round_num, num_clients):
         # Load the global model explanation
         global_shap_path = os.path.join(self.data_collector_path, 'FedXAIEvaluation', 'global', f"shap_explanation_round_{round_num}.png")
@@ -102,83 +128,58 @@ class FederatedXAI:
         return plt
     
     
-    def compare_model_shap_values(self, round_num, num_clients, data_loader):
+    def explain_combined_models(self, num_clients, data_loader):
         explanations = {}
-        global_model_path = os.path.join(self.data_collector_path, 'global', 'models', f'global_model_round_{round_num}.pt')
-        global_model_state = torch.load(global_model_path)
+        plot_buffers = {}
         global_model = self.global_model
-        global_model.load_state_dict(global_model_state)
         global_model.to(self.device).eval()
 
         background, _ = next(iter(data_loader))
         background = background[:64].to(self.device)
-        
+
+        global_explainer = shap.GradientExplainer(global_model, background)
+        global_shap_values = global_explainer.shap_values(background)
 
         for client_id in range(num_clients):
-            global_explainer = shap.GradientExplainer(global_model, background)
-            global_shap_values = global_explainer.shap_values(background)
-            
-            print(f"Comparing client {client_id} and global model shap values")
-            client_model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}.pt')
+            client_model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_final_model.pt')
             if not os.path.exists(client_model_path):
-                print(f"Client model file not found: {client_model_path}")
-                continue  
+                continue
 
             client_model_state = torch.load(client_model_path)
-            client_model = self.global_model
+            client_model = copy.deepcopy(global_model)
             client_model.load_state_dict(client_model_state)
             client_model.to(self.device).eval()
 
             client_explainer = shap.GradientExplainer(client_model, background)
             client_shap_values = client_explainer.shap_values(background)
 
-            comparison = self.evaluate_impact(global_shap_values, client_shap_values, round_num, client_id)
-            explanations[client_id] = comparison
+            # Calculate differences and generate plot
+            global_shap_flat = np.array(global_shap_values).reshape(-1)
+            client_shap_flat = np.array(client_shap_values).reshape(-1)
+            differences = np.abs(global_shap_flat - client_shap_flat).mean(axis=0)
 
-        return explanations
-    
-    
-    def evaluate_impact(self, global_shap_values, client_shap_values, round_num, client_id):
-        # Ensure SHAP values are numpy arrays and have the same shape
-        global_shap_values = np.array(global_shap_values)
-        client_shap_values = np.array(client_shap_values)
-        assert global_shap_values.shape == client_shap_values.shape, "Shape mismatch in SHAP values"
+            plt.figure(figsize=(10, 6))
+            plt.barh(np.arange(30), differences[:30])
+            plt.xlabel('Mean Absolute Difference in SHAP Value')
+            plt.title(f'Impact of Client {client_id} Model on Global Model')
+            plt.gca().invert_yaxis()
+            plt.tight_layout()
 
-        # Flatten the SHAP values if they are not already flat
-        global_shap_flat = global_shap_values.reshape(global_shap_values.shape[0], -1)
-        client_shap_flat = client_shap_values.reshape(client_shap_values.shape[0], -1)
+            plot_buf = io.BytesIO()
+            plt.savefig(plot_buf, format='png')
+            plot_buf.seek(0)
+            plt.close()
 
-        # Calculate the mean absolute difference in SHAP values across all features
-        differences = np.abs(global_shap_flat - client_shap_flat).mean(axis=0)
+            # Store results
+            explanations[client_id] = {
+                'global': global_shap_values.tolist(),
+                'client': client_shap_values.tolist(),
+                'difference': differences.tolist()
+            }
+            plot_buffers[client_id] = plot_buf
 
-        # Create a bar plot to visualize the impact
-        feature_names = ['Pixel ' + str(i) for i in range(differences.shape[0])]
-        plt.barh(feature_names[:30], differences[:30])  # Plotting first 10 features for readability
-        plt.xlabel('Mean Absolute Difference in SHAP Value')
-        plt.title('Impact of Client Model on Global Model')
-        plt.gca().invert_yaxis()  # To display the highest value on top
-        plt.tight_layout()
+        return explanations, plot_buffers
 
-        # Save the plot
-        # Define the full path for saving the plot
-        shap_plots_dir = os.path.join(self.data_collector_path, 'FedXAIEvaluation', f'client_{client_id}')
-        os.makedirs(shap_plots_dir, exist_ok=True)
-        comparison_plot_path = os.path.join(shap_plots_dir, f'comparison_shap_values_round_{round_num}.png')
-
-        # Save the plot
-        plt.savefig(comparison_plot_path)
-        plt.close()
-        
-        # Return the path to the saved plot and the raw differences
-        impact_evaluation = {
-            'global': global_shap_values.tolist(),
-            'client': client_shap_values.tolist(),
-            'difference': differences.tolist(),
-            'comparison_plot': comparison_plot_path
-        }
-        
-        return impact_evaluation
-        
 
     def explain_aggregation(self, pre_aggregated_state, post_aggregated_state, data_loader, round_num):
         # Load the global model states into new model instances
@@ -207,6 +208,8 @@ class FederatedXAI:
         shap_values_pre_reshaped = reshape_shap_values(shap_values_pre)
         shap_values_post_reshaped = reshape_shap_values(shap_values_post)
 
+        logging.info('Generating Aggregation explanation plot for global model')
+        
         # Generate comparison plot
         plt.figure(figsize=(20, 10))
         plt.subplot(1, 2, 1)
@@ -217,12 +220,12 @@ class FederatedXAI:
         shap.summary_plot(shap_values_post_reshaped, show=False)
         plt.title('Global Model Post-Aggregation')
 
-       # Save plot to a buffer
+        # Save plot to a buffer
         plot_buffer = io.BytesIO()
         plt.savefig(plot_buffer, format='png')
         plt.close()
         plot_buffer.seek(0)
-
+        
         return plot_buffer
 
     
@@ -256,13 +259,17 @@ class FederatedXAI:
 
         # Calculate differences in SHAP values
         diff_shap_values = np.abs(np.array(shap_values) - np.array(private_shap_values))
-        feature_diff = diff_shap_values.mean(axis=0)
-        
+
+        # Ensure the SHAP value differences are flattened into 1D
+        if diff_shap_values.ndim > 1:
+            feature_diff = diff_shap_values.mean(axis=0).flatten()
+        else:
+            feature_diff = diff_shap_values.mean(axis=0)
+
         mean_diff = np.mean(diff_shap_values)
         max_diff = np.max(diff_shap_values)
         privacy_noise = privacy_params
-        feature_diff = feature_diff.tolist()
-       
+
         # Interpretation Text
         interpretation_text = f"Client {client_id} Differential Privacy Analysis for Round {round_num}:\n"
         interpretation_text += f"The mean difference in SHAP values, averaging at {mean_diff:.4f}, indicates the average change in feature importance due to the applied differential privacy noise. A lower mean difference suggests that the model's interpretability remains stable even after introducing privacy-preserving noise.\n\n"
@@ -271,8 +278,10 @@ class FederatedXAI:
         interpretation_text += "Privacy-Impact Trade-offs: This round's differential privacy implementation demonstrates a balance where the model maintains reasonable interpretability while providing privacy protection. Adjustments to the noise level may be considered based on the desired privacy-accuracy trade-off.\n\n"
         interpretation_text += "Feature Analysis: Investigating specific features with high SHAP value differences can provide insights into how differential privacy affects the model's reliance on certain features. This analysis is crucial for understanding the model's robustness under privacy constraints.\n"
 
+        logging.info('Generating DP explanation plot and text file for client model')
+        
         # Visualization
-        feature_indices = np.arange(len(feature_diff))
+        feature_indices = np.arange(feature_diff.size)  # Adjust the size to match the flattened array
         plt.figure(figsize=(10, 6))
         plt.bar(feature_indices, feature_diff)
         plt.xlabel('Feature Index')
@@ -284,7 +293,7 @@ class FederatedXAI:
         plt.savefig(buf, format='png')
         buf.seek(0)
         plt.close()
-
+        
         return interpretation_text, buf
         
     
@@ -308,53 +317,60 @@ class FederatedXAI:
         return model
 
 
-    def generate_incentive_explanation(self, round_num):
-        shapley_values_file = os.path.join(self.data_collector_path, 'client', 'contribution', f'client_shapley_values_round_{round_num}.json')
-        incentives_file = os.path.join(self.data_collector_path, 'client', 'contribution', f'client_incentives_round_{round_num}.json')
-        explanation_dir = os.path.join(self.data_collector_path, 'client', 'contribution')
-        explanation_file = os.path.join(explanation_dir, f'incentive_explanation_round_{round_num}.txt')
-
-        # Ensure the directory exists
-        os.makedirs(explanation_dir, exist_ok=True)
-        
-        # Read the Shapley values and incentives
-        with open(shapley_values_file, 'r') as file:
-            shapley_values = json.load(file)
-        with open(incentives_file, 'r') as file:
-            incentives = json.load(file)
-
-        # Generate the explanation text
-        explanation = self._compose_incentive_explanation_text(shapley_values, incentives)
-        
-        # Save the explanation to a file
-        with open(explanation_file, 'w') as file:
-            file.write(explanation)
-
-        # Generate and save the plot
-        self._create_incentive_plot(shapley_values, incentives, round_num)
-
-    def _compose_incentive_explanation_text(self, shapley_values, incentives):
+    def generate_incentive_explanation(self, shapley_values, incentives):
+        # Explanation Text
         explanation = "Federated Learning Incentive Allocation Explanation\n"
         explanation += "-------------------------------------------------\n\n"
-        explanation += "The incentives for each client in the federated learning system were allocated based on the Shapley values calculated for each client.\n\n"
+        explanation += "Incentives for each client in the federated learning system are allocated based on the Shapley values calculated for each client.\n\n"
         explanation += "Shapley Value Breakdown:\n"
         for client_id, value in shapley_values.items():
             explanation += f"- Client {client_id}: Shapley Value = {value}\n"
         explanation += "\nIncentive Allocation:\n"
         for client_id, incentive in incentives.items():
             explanation += f"- Client {client_id}: Incentive = ${incentive:.2f}\n"
-        explanation += "\nThis method ensures a fair distribution of the total incentive pool based on the contribution of each client.\n"
-        return explanation
 
-    def _create_incentive_plot(self, shapley_values, incentives, round_num):
-        plt.figure(figsize=(10, 6))
-        plt.bar(shapley_values.keys(), shapley_values.values(), color='blue', label='Shapley Values')
-        plt.bar(incentives.keys(), incentives.values(), color='green', alpha=0.5, label='Incentives')
-        plt.xlabel('Client ID')
-        plt.ylabel('Amount')
-        plt.title(f'Incentive Allocation vs Shapley Values (Round {round_num})')
-        plt.legend()
-        
-        plot_file = os.path.join(self.data_collector_path, 'client', 'contribution', f'incentive_plot_round_{round_num}.png')
-        plt.savefig(plot_file)
-        plt.close()
+        # Descriptive Statistics
+        shapley_array = np.array(list(shapley_values.values()))
+        explanation += "\nDescriptive Statistics for Shapley Values:\n"
+        explanation += f"Mean: {np.mean(shapley_array):.2f}, Median: {np.median(shapley_array):.2f}, Std Dev: {np.std(shapley_array):.2f}\n"
+
+        # Generate and return each plot separately
+        plot_buffers = []
+
+        # Bar Chart: Incentive Allocation vs Shapley Values
+        fig1, ax1 = plt.subplots()
+        ax1.bar(shapley_values.keys(), shapley_values.values(), color='blue', label='Shapley Values')
+        ax1.bar(incentives.keys(), incentives.values(), color='green', alpha=0.5, label='Incentives')
+        ax1.set_xlabel('Client ID')
+        ax1.set_ylabel('Amount')
+        ax1.set_title('Incentive Allocation vs Shapley Values')
+        ax1.legend()
+        buf1 = io.BytesIO()
+        plt.savefig(buf1, format='png')
+        buf1.seek(0)
+        plt.close(fig1)
+        plot_buffers.append(buf1)
+
+        # Pie Chart: Contribution Distribution
+        fig2, ax2 = plt.subplots()
+        ax2.pie(shapley_values.values(), labels=shapley_values.keys(), autopct='%1.1f%%')
+        ax2.set_title('Distribution of Contributions')
+        buf2 = io.BytesIO()
+        plt.savefig(buf2, format='png')
+        buf2.seek(0)
+        plt.close(fig2)
+        plot_buffers.append(buf2)
+
+        # Scatter Plot: Contributions vs Incentives
+        fig3, ax3 = plt.subplots()
+        ax3.scatter(shapley_values.values(), incentives.values())
+        ax3.set_xlabel('Shapley Values (Contributions)')
+        ax3.set_ylabel('Incentives')
+        ax3.set_title('Contributions vs Incentives')
+        buf3 = io.BytesIO()
+        plt.savefig(buf3, format='png')
+        buf3.seek(0)
+        plt.close(fig3)
+        plot_buffers.append(buf3)
+
+        return explanation, plot_buffers

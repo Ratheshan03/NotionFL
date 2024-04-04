@@ -1,7 +1,6 @@
 # main.py
 import copy
 import os
-import shap
 import yaml
 import torch
 import logging
@@ -9,12 +8,12 @@ from FL_Core.data_manager import get_data_loaders, split_client_data
 from FL_Core.client import FLClient
 from FL_Core.server import FLServer
 from models.model import MNISTModel, CIFAR10Model
-from utils.secure_aggregation import fedavg_aggregate, average_model_states, calculate_variance, perform_fedavg_aggregation
+from utils.secure_aggregation import calculate_variance, perform_fedavg_aggregation
 from utils.privacy_module import apply_differential_privacy
 from utils.contribution_evaluation import calculate_shapley_values
 from utils.data_collector import DataCollector
 from utils.federated_xai import FederatedXAI
-from utils.allocate_incentive import allocate_and_save_incentives
+from utils.allocate_incentive import allocate_incentives
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -43,18 +42,18 @@ def main():
     else:
         raise ValueError(f"Dataset {dataset_name} not supported.")
     
+    # Initializing the FL server
+    server = FLServer(global_model)
+    
     # Initialize DataCollector and FederatedXAI
     data_collector = DataCollector(output_dir='output/data_collector')
-    federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'], global_model=global_model)
+    federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'], global_model=global_model, server=server)
     
     # Initializing FL clients
     clients = [
         FLClient(client_id=i, model=global_model, train_loader=client_data_loaders[f'client_{i}'], test_loader=test_loader, device=config['device'], data_collector=data_collector)
         for i in range(num_clients)
     ]
-    
-    # Initializing the FL server
-    server = FLServer(global_model)
 
     # Federated Learning Process
     for round in range(fl_rounds):
@@ -78,9 +77,9 @@ def main():
             # Store the client model updates
             data_collector.collect_client_updates(client.client_id, model_updates)
               
-            # Explain client model each round
-            shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_client_model(client.client_id, round, test_loader)
-            data_collector.save_shap_explanation_plot(shap_plot, f'client_{client.client_id}', round)
+            # Explain client model each roundS
+            evaluation_text, shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_client_model(client_model_state, client.client_id, test_loader)
+            data_collector.save_client_model_evaluation(client.client_id, evaluation_text, shap_plot)
 
             # Apply differential privacy to the model parameters
             logging.info(f"\nAdding differential privacy for client_{client.client_id}'s round {round} model")
@@ -99,7 +98,7 @@ def main():
             private_model_state = client.model.cpu().state_dict()
             data_collector.collect_client_model(client.client_id, private_model_state, round, suffix='private')
              
-            # Explain the impact of differential privacy on this client's model
+            # Explaining impact of differential privacy
             privacy_explanation_text, privacy_plot_buffer = federated_xai.explain_privacy_impact(
                 client.client_id, round, test_loader, config['noise_multiplier']
             )
@@ -110,7 +109,7 @@ def main():
             )
             
             # Collect the model parameters for aggregation
-            client_updates.append(client_model_state)
+            client_updates.append(model_updates)
 
             # Keep track of client states before aggregation for Shapley Value calculation
             client_states_before_aggregation[client.client_id] = client_model_state
@@ -120,25 +119,30 @@ def main():
         
         # Calculate variance before aggregation
         variance_before = calculate_variance(client_updates)
+        print(f'variance before {variance_before}')
 
         # Perform FedAvg aggregation
-        logging.info(f'Performing secured aggregation for round: {round}')
+        logging.info(f'Performing Secure Aggregation for round: {round}')
         pre_aggregated_state_dict = copy.deepcopy(global_model.state_dict())
         aggregated_state_dict, time_overheads = perform_fedavg_aggregation(global_model.state_dict(), client_updates)
 
         # Calculate variance after aggregation
         variance_after = calculate_variance([aggregated_state_dict])
+        print(f'variance after {variance_after}')
         
-        # Explain aggregation
+        # Explain aggregation Process
         aggregated_explanation = federated_xai.explain_aggregation(pre_aggregated_state_dict, aggregated_state_dict, test_loader, round)
         data_collector.save_aggregation_explanation(aggregated_explanation, round)
         
         # Evaluate performance difference
         pre_aggregation_accuracy = server.evaluate_model_state(pre_aggregated_state_dict, test_loader, config['device'])
+        print(f'Pre-aggregation accuracy {pre_aggregation_accuracy}')
         global_model.load_state_dict(aggregated_state_dict)
-        post_aggregation_accuracy = server.evaluate_global_model(test_loader, config['device'])[1]
+        post_aggregation_accuracy = server.evaluate_model_state(aggregated_state_dict, test_loader, config['device'])
+        print(f'Post-aggregation accuracy {post_aggregation_accuracy}')
 
         performance_difference = post_aggregation_accuracy - pre_aggregation_accuracy
+        print(f'performance_difference {performance_difference}')
 
         # Collect aggregation metrics
         aggregation_metrics = {
@@ -148,7 +152,7 @@ def main():
         }
         data_collector.collect_secure_aggregation_logs(round, aggregation_metrics, time_overheads)
 
-        # Update each client model with the new global state
+        logging.info(f'Updating client model with new global state after aggregation')
         for client in clients:
             client.update_model(global_model.state_dict())
 
@@ -164,46 +168,45 @@ def main():
         data_collector.collect_global_model(global_model.cpu().state_dict(), round)
 
 
-    # Define the model evaluation function
-    model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'], dataset_name)
-
-    # Define the averaging function
-    averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
-
-    # Calculate Contribution evaluation Shapley Values
-    shapley_values = calculate_shapley_values(
-            round_num=round,
-            num_clients=num_clients,
-            data_collector_path=data_collector.output_dir,
-            model_evaluation_func=model_evaluation_func,
-            averaging_func=averaging_func,
-            device=config['device']
-    )
-    print(f"Shapley Values for round {round + 1}: {shapley_values}")
-
-    # Optionally save Shapley values
-    data_collector.collect_contribution_eval_metrics(round, shapley_values)
-        
-    # Allocate incentives based on Shapley values
-    allocate_and_save_incentives(round+1)
-    # Call the function to generate and save the explanation
-    federated_xai.generate_incentive_explanation(round+1)
+    # Load the final state of the global model
+    final_model_path = os.path.join(data_collector.output_dir, 'global', 'models', f'global_model_round_{fl_rounds-1}.pt')
+    final_model_state_dict = torch.load(final_model_path, map_location=config['device'])
+    global_model.load_state_dict(final_model_state_dict)
     
-    # Explain the global model using SHAP
-    shap_numpy, test_numpy = federated_xai.explain_global_model(round, test_loader)
+    # Define the model evaluation & averaging function
+    model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'], dataset_name)
+    averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
+    
+    # After completing all FL rounds
+    shapley_values, shapley_plot = calculate_shapley_values(
+            fl_rounds, num_clients, data_collector.output_dir, 
+    model_evaluation_func, averaging_func, config['device']
+    )
+    print(f"Shapley Values for the Training: {shapley_values}")
 
-    # Save the SHAP explanation plot for the global model
-    data_collector.save_shap_explanation_plot(shap_numpy, test_numpy, 'global', round+1)
+    # Storing Contribution shapley value results
+    data_collector.collect_contribution_metrics(shapley_values, shapley_plot)
+    
+    # Allocate incentives based on Shapley values
+    incentives, incentive_plot = allocate_incentives(shapley_values)
+    data_collector.save_incentives(incentives, incentive_plot)
+    
+    # Explain incentives and contributions
+    explanation_text, plot_buffers = federated_xai.generate_incentive_explanation(shapley_values, incentives)
+    data_collector.save_incentive_explanation(explanation_text, plot_buffers)
+
+    # Explaining the global model using SHAP and storing the plots
+    evaluation_text, conf_matrix, shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_global_model(test_loader)
+    data_collector.save_global_model_evaluation(evaluation_text, shap_plot, conf_matrix)
     
     # After explaining all client and global models
-    comparison_plot = federated_xai.compare_models(round+1, num_clients)
+    # comparison_plot = federated_xai.compare_models(round, num_clients)
+    # data_collector.save_comparison_plot(comparison_plot, round)
 
-    data_collector.save_comparison_plot(comparison_plot, round+1)
+    # Comparing and explaining client and global models
+    explanations, plot_buffers = federated_xai.explain_combined_models(num_clients, test_loader)
+    data_collector.save_model_comparisons(explanations, plot_buffers)
 
-    explanations = federated_xai.compare_model_shap_values(round, num_clients, test_loader)
-    for client_id, explanation in explanations.items():
-        data_collector.save_evaluation_plot(explanation['comparison_plot'], client_id, round)
- 
 
 if __name__ == "__main__":
     main()

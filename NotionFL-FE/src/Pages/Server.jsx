@@ -1,16 +1,15 @@
-// src/Pages/Server.jsx
-
-import { Routes, Route } from 'react-router-dom';
-import ContentArea from '../components/ContentArea';
-import NavBar from '../components/NavBar';
-import SideBar from '../components/Sidebar';
-import Overview from './Server/Overview';
-import ClientView from './Server/ClientsView';
-import StartTraining from './Server/StartTraining';
-import ViewTraining from './Server/ViewTraining';
-import Visualizations from './Server/Visualizations';
-import PrivacyandSecurity from './Server/PrivacyandSecurity';
-import GlobalModel from './Server/GlobalModel';
+import { Routes, Route } from "react-router-dom";
+import ContentArea from "../components/ContentArea";
+import NavBar from "../components/NavBar";
+import SideBar from "../components/Sidebar";
+import Overview from "./Server/Overview";
+import ClientView from "./Server/ClientsView";
+import StartTraining from "./Server/StartTraining";
+import ViewTraining from "./Server/ViewTraining";
+import Visualizations from "./Server/Visualizations";
+import PrivacyandSecurity from "./Server/PrivacyandSecurity";
+import GlobalModel from "./Server/GlobalModel";
+import Footer from "../components/Footer";
 
 const serverLinks = [
   { name: "Overview", path: "/server/overview" },
@@ -26,7 +25,7 @@ const Server = () => {
   return (
     <>
       <NavBar />
-      <div className=" flex h-screen">
+      <div className="flex h-screen">
         <SideBar links={serverLinks} />
         <ContentArea>
           <Routes>
@@ -41,6 +40,7 @@ const Server = () => {
           </Routes>
         </ContentArea>
       </div>
+      <Footer />
     </>
   );
 };

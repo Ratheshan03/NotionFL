@@ -31,11 +31,12 @@ const Login = () => {
       console.log(response);
 
       if (response.status === 200 && response.data.access_token) {
-        toast.success("Login successful!");
         const { access_token, user } = response.data;
         // useAuth context and passing the user data
         login({ access_token, user });
-        navigate("/home");
+        toast.success("Login successful!", {
+          onClose: () => navigate("/home"), // Redirect to login after toast closes
+        });
       }
     } catch (error) {
       console.error("Error during login: ", error);

@@ -1,23 +1,37 @@
-// src/App.jsx
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingPage from "./Pages/LandingPage";
+import Home from "./Pages/Home";
+import Server from "./Pages/Server";
+import Client from "./Pages/Client";
+import SignupStartPage from "./components/SignUp/SignupStartPage";
+import ServerSignup from "./components/SignUp/ServerSignUp";
+import ClientSignup from "./components/SignUp/ClientSignUp";
+import Login from "./components/Login";
+import "./index.css";
+import axios from "axios";
+import { AuthProvider } from "./Authcontext";
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './Pages/Home';
-import Server from './Pages/Server';
-import Client from './Pages/Client';
-import './index.css';
+// Configure axios to send cookies with each request
+axios.defaults.withCredentials = true;
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/server/*" element={<Server />} />
-          <Route path="/client/*" element={<Client />} />
-          
-          {/* Define other routes here */}
-        </Routes>
-      </div>
+      <AuthProvider>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/server/*" element={<Server />} />
+            <Route path="/client/*" element={<Client />} />
+            <Route path="/signupoptions" element={<SignupStartPage />} />
+            <Route path="/signup/server" element={<ServerSignup />} />
+            <Route path="/signup/client" element={<ClientSignup />} />
+            <Route path="/login" element={<Login />} />
+            {/* Define other routes here */}
+          </Routes>
+        </div>
+      </AuthProvider>
     </Router>
   );
 }

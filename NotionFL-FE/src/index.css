@@ -2,14 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-.App {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+/* .App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+} */
 
+* > * {
+  font-family: "Poppins", sans-serif;
+}
 
-
+.signup-card {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Adjust the alpha value for desired transparency */
+  width: 100%; /* Full width on smaller screens */
+  max-width: 400px; /* Maximum width of the card */
+}
 
 /* src/Home.css */
 @keyframes logoAnimation {

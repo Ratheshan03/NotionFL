@@ -3,10 +3,8 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../Authcontext";
 import { MenuIcon, XIcon } from "@heroicons/react/solid"; // Ensure you have these icons installed
 
-const NavBar = ({ isScrolled }) => {
-  const navClass = isScrolled
-    ? "bg-gradient-to-r from-gray-700 to-gray-900 z-50 text-white shadow-md"
-    : "bg-transparent";
+const NavBar = ({ isScrolled, solidBackground }) => {
+  const navClass = isScrolled ? "" : "bg-transparent";
   const { currentUser } = useAuth();
   const isServerAdmin = currentUser?.user.role === "admin";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,9 +13,15 @@ const NavBar = ({ isScrolled }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const bgColorClass = solidBackground
+    ? "bg-gradient-to-r from-gray-900 from-gray-700 to-gray-900 z-50"
+    : isScrolled
+    ? "bg-gradient-to-r from-gray-900 from-gray-700 to-gray-900 z-50"
+    : "bg-transparent";
+
   return (
     <nav
-      className={`${navClass} fixed w-full z-10 transition shadow-md duration-300`}
+      className={`fixed top-0 left-0 w-full transition duration-300 z-10 ${bgColorClass}`}
     >
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
@@ -40,7 +44,7 @@ const NavBar = ({ isScrolled }) => {
               Home
             </NavLink>
             <NavLink
-              to={isServerAdmin ? "/server" : "/client"}
+              to={isServerAdmin ? "/serverView" : "/clientView"}
               className="text-white hover:text-blue-400 px-3 py-2 rounded-md text-md font-medium"
             >
               {isServerAdmin ? "Server View" : "Client View"}
@@ -88,7 +92,7 @@ const NavBar = ({ isScrolled }) => {
           Home
         </NavLink>
         <NavLink
-          to={isServerAdmin ? "/server" : "/client"}
+          to={isServerAdmin ? "/serverView" : "/clientView"}
           className="block text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium"
         >
           {isServerAdmin ? "Server View" : "Client View"}

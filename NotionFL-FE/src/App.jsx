@@ -22,8 +22,8 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/home" element={<Home />} />
-            <Route path="/server/*" element={<Server />} />
-            <Route path="/client/*" element={<Client />} />
+            <Route path="/serverView/*" element={<Server />} />
+            <Route path="/clientView/*" element={<Client />} />
             <Route path="/signupoptions" element={<SignupStartPage />} />
             <Route path="/signup/server" element={<ServerSignup />} />
             <Route path="/signup/client" element={<ClientSignup />} />

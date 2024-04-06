@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, make_response
-from Database.auth import register_user, check_user_credentials
+from Database.controllers.auth import register_user, check_user_credentials
 from flask_jwt_extended import create_access_token
 
 auth_bp = Blueprint('auth_bp', __name__)

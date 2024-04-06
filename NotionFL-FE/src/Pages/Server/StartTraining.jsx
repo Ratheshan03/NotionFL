@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../Authcontext";
 
 const StartTraining = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   // States for each training parameter
   const [batchSize, setBatchSize] = useState("64");
   const [clipThreshold, setClipThreshold] = useState("1.0");
@@ -16,6 +18,7 @@ const StartTraining = () => {
   const [numClients, setNumClients] = useState("4");
   const [selectedDataset, setSelectedDataset] = useState("MNIST");
   const [selectedModel, setSelectedModel] = useState("MNISTModel");
+  const [configOptions, setConfigOptions] = useState({});
 
   // Handler functions for input changes
   const handleBatchSizeChange = (event) => setBatchSize(event.target.value);
@@ -48,31 +51,27 @@ const StartTraining = () => {
       num_clients: numClients,
       dataset: selectedDataset,
       model: selectedModel,
+      user_id: currentUser?.user?.id,
     };
 
-    // Log the config to the console to see what's being sent
     console.log("Sending training config:", trainingConfig);
 
-    const API_ENDPOINT = "http://localhost:5000/start_training";
-
     try {
-      const response = await axios.post(API_ENDPOINT, trainingConfig, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:5000/training/start_training",
+        trainingConfig,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      // Check if training has started successfully
       if (response.data.status === "Training started") {
-        // Store training_id in local storage
         localStorage.setItem("training_id", response.data.training_id);
-
-        // Show confirmation and redirect to view training page
         alert("Training has started successfully!");
-        // Redirect to the training view page
-        navigate("/server/view-training");
+        navigate("/serverView/view-training");
       } else {
-        // Handle other status messages
         alert("Error starting training");
       }
     } catch (error) {
@@ -81,158 +80,209 @@ const StartTraining = () => {
     }
   };
 
-  // Form JSX
+  // Example of fetching the training configuration in a React component
+  useEffect(() => {
+    const fetchTrainingConfig = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/training/get_training_config"
+        );
+        if (response.status === 200) {
+          setConfigOptions(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching training configuration:", error);
+      }
+    };
+
+    fetchTrainingConfig();
+  }, []);
+
+  // Tailwind CSS classes
+  const selectClass =
+    "block w-full mt-1 bg-white/30 backdrop-filter backdrop-blur-lg border border-white/50 text-white rounded-md shadow-sm px-4 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50";
+  const labelClass = "block text-sm font-medium text-white";
+  const buttonClass =
+    "w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-800 to-blue-950 hover:from-blue-800 hover:to-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
+
   return (
-    <div className="max-w-2xl mx-auto my-10 p-6 bg-white shadow-md rounded-md">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+    <div className="max-w-2xl mx-auto my-10 p-6 bg-gradient-to-br from-blue-950 via-gray-900 to-black shadow-md rounded-md">
+      <h2 className="text-2xl font-semibold text-white mb-6">
         Start Federated Learning Training
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Dataset
-          </label>
+          <label className={labelClass}>Dataset</label>
           <select
             value={selectedDataset}
             onChange={handleDatasetChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            className={selectClass}
           >
-            <option value="MNIST">MNIST</option>
-            <option value="CIFAR10">CIFAR10</option>
-            {/* Add more datasets as needed */}
+            {configOptions.datasets?.map((dataset, idx) => (
+              <option key={idx} value={dataset}>
+                {dataset}
+              </option>
+            ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Model
-          </label>
+          <label className={labelClass}>Model</label>
           <select
             value={selectedModel}
             onChange={handleModelChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            className={selectClass}
           >
-            <option value="MNISTModel">MNIST Model</option>
-            <option value="CIFAR10Model">CIFAR10 Model</option>
-            {/* Add more models as needed */}
+            {configOptions.models?.map((model, idx) => (
+              <option key={idx} value={model}>
+                {model}
+              </option>
+            ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Batch Size
-          </label>
-          <input
-            type="text"
-            name="batch_size"
+          <label className={labelClass}>Batch Size</label>
+          <select
             value={batchSize}
             onChange={handleBatchSizeChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.trainingSettings?.batchSize?.map(
+              (batchSize, idx) => (
+                <option key={idx} value={batchSize}>
+                  {batchSize}
+                </option>
+              )
+            )}
+          </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Training Epochs
-          </label>
-          <input
-            type="text"
-            name="epochs"
+          <label className={labelClass}>Training Epochs</label>
+          <select
             value={epochs}
             onChange={handleEpochsChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.trainingSettings?.epochs?.map((epochs, idx) => (
+              <option key={idx} value={epochs}>
+                {epochs}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Device - cpu or cuda
-          </label>
-          <input
-            type="text"
-            name="device"
+          <label className={labelClass}>Model Runtime Device</label>
+          <select
             value={device}
             onChange={handleDeviceChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.trainingSettings?.device?.map((device, idx) => (
+              <option key={idx} value={device}>
+                {device}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Learning Rates
-          </label>
-          <input
-            type="text"
-            name="learning_rate"
+          <label className={labelClass}>Model Learning Rate</label>
+          <select
             value={learningRate}
             onChange={handleLearningRateChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.trainingSettings?.learningRate?.map(
+              (learningRate, idx) => (
+                <option key={idx} value={learningRate}>
+                  {learningRate}
+                </option>
+              )
+            )}
+          </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Federated Learning rounds
-          </label>
-          <input
-            type="text"
-            name="fl_rounds"
+          <label className={labelClass}>Federated Learning Rounds</label>
+          <select
             value={flRounds}
             onChange={handleFlRoundsChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.trainingSettings?.flRounds?.map((flRounds, idx) => (
+              <option key={idx} value={flRounds}>
+                {flRounds}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Number of Clients
-          </label>
-          <input
-            type="text"
-            name="num_clients"
+          <label className={labelClass}>Number of Clients</label>
+          <select
             value={numClients}
             onChange={handleNumClientsChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.clients?.numClients?.map((numClients, idx) => (
+              <option key={idx} value={numClients}>
+                {numClients}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Threshold - Privacy mechanism
-          </label>
-          <input
-            type="text"
-            name="clip_threshold"
+          <label className={labelClass}>Threshold - Privacy mechanism</label>
+          <select
             value={clipThreshold}
             onChange={handleClipThresholdChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.privacySettings?.clipThreshold?.map(
+              (clipThreshold, idx) => (
+                <option key={idx} value={clipThreshold}>
+                  {clipThreshold}
+                </option>
+              )
+            )}
+          </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className={labelClass}>
             Noise Multiplier - Privacy Mechnism
           </label>
-          <input
-            type="text"
-            name="noise_multiplier"
+          <select
             value={noiseMultiplier}
             onChange={handleNoiseMultiplierChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.privacySettings?.noiseMultiplier?.map(
+              (noiseMultiplier, idx) => (
+                <option key={idx} value={noiseMultiplier}>
+                  {noiseMultiplier}
+                </option>
+              )
+            )}
+          </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Evaluation rounds
-          </label>
-          <input
-            type="text"
-            name="eval_every_n_rounds"
+          <label className={labelClass}>Evaluation Rounds</label>
+          <select
             value={evalEveryNRounds}
             onChange={handleEvalEveryNRoundsChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+            className={selectClass}
+          >
+            {configOptions.evaluationSettings?.evalEveryNRounds?.map(
+              (evalEveryNRounds, idx) => (
+                <option key={idx} value={evalEveryNRounds}>
+                  {evalEveryNRounds}
+                </option>
+              )
+            )}
+          </select>
         </div>
 
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700"
-        >
+        <button type="submit" className={buttonClass}>
           Start Training
         </button>
       </form>

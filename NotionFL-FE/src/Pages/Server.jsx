@@ -12,20 +12,20 @@ import GlobalModel from "./Server/GlobalModel";
 import Footer from "../components/Footer";
 
 const serverLinks = [
-  { name: "Overview", path: "/server/overview" },
-  { name: "Client View", path: "/server/client-view" },
-  { name: "Start Training", path: "/server/start-training" },
-  { name: "View Training", path: "/server/view-training" },
-  { name: "Visualizations", path: "/server/visualizations" },
-  { name: "Privacy & Security", path: "/server/privacy-security" },
-  { name: "Global Model", path: "/server/global-model" },
+  { name: "Overview", path: "/serverView/overview" },
+  { name: "Client View", path: "/serverView/client-view" },
+  { name: "Start Training", path: "/serverView/start-training" },
+  { name: "View Training", path: "/serverView/view-training" },
+  { name: "Visualizations", path: "/serverView/visualizations" },
+  { name: "Privacy & Security", path: "/serverView/privacy-security" },
+  { name: "Global Model", path: "/serverView/global-model" },
 ];
 
 const Server = () => {
   return (
     <>
-      <NavBar />
-      <div className="flex h-screen">
+      <NavBar solidBackground={true} />
+      <div className="flex" style={{ marginTop: "64px" }}>
         <SideBar links={serverLinks} />
         <ContentArea>
           <Routes>

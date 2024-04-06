@@ -1,10 +1,8 @@
-// src/components/SideBar.js
-
 import { NavLink } from "react-router-dom";
 
 const SideBar = ({ links }) => {
   return (
-    <div className="w-64 bg-blue-800 min-h-screen p-5">
+    <div className="w-64 bg-gradient-to-br from-blue-950 via-gray-900 to-black min-h-screen p-5">
       <ul className="flex flex-col space-y-3">
         {links.map((link, index) => (
           <li key={index}>

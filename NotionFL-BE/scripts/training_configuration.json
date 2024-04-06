@@ -1,0 +1,32 @@
+{
+  "datasets": ["MNIST", "CIFAR10"],
+  "models": ["MNISTModel", "CIFAR10Model"],
+  "trainingSettings": {
+    "batchSize": ["32", "64", "128"],
+    "epochs": ["3", "5", "10", "20"],
+    "device": ["cpu", "cuda"],
+    "learningRate": ["0.001", "0.01", "0.1"],
+    "flRounds": ["1", "2", "3", "4", "5"]
+  },
+  "clients": {
+    "numClients": ["1", "2", "3", "4", "5"]
+  },
+  "evaluationSettings": {
+    "evalEveryNRounds": ["1", "2", "3", "4", "5"]
+  },
+  "privacySettings": {
+    "noiseMultiplier": [
+      "0.1",
+      "0.2",
+      "0.3",
+      "0.4",
+      "0.5",
+      "0.6",
+      "0.7",
+      "0.8",
+      "0.9",
+      "1.0"
+    ],
+    "clipThreshold": ["0.5", "1.0", "1.1", "1.2"]
+  }
+}

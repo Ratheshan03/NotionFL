@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from .schemas.user_schema import User
+from ..schemas.user_schema import User
 from mongoengine.errors import NotUniqueError
 import logging
 
@@ -30,3 +30,4 @@ def check_user_credentials(username, password):
     except Exception as e:
         logging.error(f"An error occurred during login: {e}")
         return None
+

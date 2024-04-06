@@ -1,6 +1,6 @@
-# main.py
 import copy
 import os
+import sys
 import yaml
 import torch
 import logging
@@ -14,10 +14,11 @@ from utils.contribution_evaluation import calculate_shapley_values
 from utils.data_collector import DataCollector
 from utils.federated_xai import FederatedXAI
 from utils.allocate_incentive import allocate_incentives
+from Database.controllers.training import update_training_status
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def main():
+def main(training_id):
     # Load training configurations from a YAML file
     with open('config.yml', 'r') as file:
         config = yaml.safe_load(file)
@@ -206,7 +207,11 @@ def main():
     # Comparing and explaining client and global models
     explanations, plot_buffers = federated_xai.explain_combined_models(num_clients, test_loader)
     data_collector.save_model_comparisons(explanations, plot_buffers)
+    
+    # Once training is complete, update the status in the database
+    update_training_status(training_id, 'Completed')
 
 
 if __name__ == "__main__":
-    main()
+    training_id = sys.argv[1]
+    main(training_id)

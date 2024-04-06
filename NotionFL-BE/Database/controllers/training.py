@@ -6,7 +6,7 @@ import yaml
 from datetime import datetime, timezone
 from subprocess import Popen
 from flask import current_app as app
-from ..schemas.user_schema import User
+from ..schemas.user_schema import User, TrainingSession
 from ..schemas.training_schema import TrainingModel
 
 def get_training_configuration():
@@ -28,12 +28,10 @@ def update_training_logs(training_id, log_file_path, update_interval=30):
             with open(log_file_path, 'r') as log_file:
                 logs = log_file.read()
 
-            # Update the database with the latest logs
             training_session = TrainingModel.objects(training_id=training_id).first()
             if training_session:
                 training_session.update(set__logs=logs)
 
-            # Check if the training process is completed
             if training_session and training_session.status in ['Completed', 'Failed']:
                 break
 
@@ -46,6 +44,10 @@ def start_fl_training(training_id, training_data, user_id):
     try:
         # Initiate training process and save config data
         initiating_training(training_id, training_data, user_id)
+        
+        # Assign client IDs to registered clients for this training session
+        assign_client_ids_to_training(training_id, training_data['num_clients'])
+        
         log_dir = 'training_logs'
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, f"{training_id}_logs.txt")
@@ -59,19 +61,17 @@ def start_fl_training(training_id, training_data, user_id):
         log_thread.start()
 
         process.wait()
-        # Once the training is complete, update the status
         update_training_status(training_id, 'Completed' if process.returncode == 0 else 'Failed')
+    
     except Exception as e:
         print(f"Error during training: {e}")
         
         
 def initiating_training(training_id, training_data, user_id):
-    # Fetch user details based on user_id
     user = User.objects(id=user_id).first()
     if not user:
         raise ValueError(f"User with ID {user_id} not found")
 
-    # Prepare the training object
     training_object = TrainingModel(
         training_id=training_id,
         initiator={
@@ -90,7 +90,6 @@ def initiating_training(training_id, training_data, user_id):
 
 def get_user_training_sessions(userId):
     try:
-        # Query the database for training sessions initiated by the user
         training_sessions = TrainingModel.objects(initiator__user_id=userId)
         return [session.to_json() for session in training_sessions]
     except Exception as e:
@@ -107,3 +106,14 @@ def update_training_status(training_id, new_status):
             print(f"No training session found with ID {training_id}")
     except Exception as e:
         print(f"An error occurred while updating training status: {e}")
+
+
+def assign_client_ids_to_training(training_id, num_clients):
+    registered_clients = User.objects(role='client', training_sessions__0__exists=False)
+    registered_clients = sorted(registered_clients, key=lambda x: x.id.generation_time)[:num_clients]
+
+    for i, client in enumerate(registered_clients):
+        client_number = i 
+        new_session = TrainingSession(training_id=training_id, client_number=client_number)
+        client.update(push__training_sessions=new_session)
+    

@@ -15,13 +15,27 @@ from utils.data_collector import DataCollector
 from utils.federated_xai import FederatedXAI
 from utils.allocate_incentive import allocate_incentives
 from Database.controllers.training import update_training_status
+from Database.schemas.training_schema import TrainingModel
+from mongoengine import connect
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Fetch your database URI and name from environment variables
+db_uri = os.environ.get("MONGODB_URI")
+db_name = os.environ.get("DB_NAME")
+
+# Establish a connection to the MongoDB database
+connect(db_name, host=db_uri)
 
 def main(training_id):
     # Load training configurations from a YAML file
     with open('config.yml', 'r') as file:
         config = yaml.safe_load(file)
+        
+    # Ensure that the training object exists in the database and update it
+    training_session = TrainingModel.objects(training_id=training_id).first()
+    if not training_session:
+        raise ValueError(f"No training session found with ID {training_id}")
 
     # Configuration parameters
     dataset_name = config['dataset']
@@ -47,7 +61,7 @@ def main(training_id):
     server = FLServer(global_model)
     
     # Initialize DataCollector and FederatedXAI
-    data_collector = DataCollector(output_dir='output/data_collector')
+    data_collector = DataCollector(output_dir='output/data_collector', training_id=training_id)
     federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'], global_model=global_model, server=server)
     
     # Initializing FL clients

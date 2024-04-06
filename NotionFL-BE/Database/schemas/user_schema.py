@@ -1,5 +1,10 @@
-from mongoengine import Document, StringField, EmailField, BooleanField
+import datetime
+from mongoengine import Document, ListField, StringField, IntField, EmailField, BooleanField, EmbeddedDocumentField, EmbeddedDocument
 
+class TrainingSession(EmbeddedDocument):
+    training_id = StringField(required=True)
+    client_number = IntField(required=True)
+    
 class User(Document):
     username = StringField(required=True, unique=True)
     email = EmailField(required=True, unique=True)
@@ -8,6 +13,7 @@ class User(Document):
     organization = StringField() 
     contact = StringField()       
     is_active = BooleanField(default=True)
+    training_sessions = ListField(EmbeddedDocumentField(TrainingSession)) 
 
     meta = {
         'collection': 'users',

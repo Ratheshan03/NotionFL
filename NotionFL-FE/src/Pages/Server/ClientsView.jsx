@@ -1,78 +1,170 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../../Authcontext"; // Update this path to your actual auth context
+
+const DataCard = ({ title, content }) => (
+  <div className="bg-gray-700 p-4 rounded-lg shadow-sm mb-4 overflow-auto">
+    <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+    <div className="text-white max-w-full overflow-x-auto">{content}</div>
+  </div>
+);
 
 const ClientView = () => {
-  const [selectedClientId, setSelectedClientId] = useState('');
-  const [selectedRoundNumber, setSelectedRoundNumber] = useState('');
+  const [trainingSessions, setTrainingSessions] = useState([]);
+  const [clientCounts, setClientCounts] = useState({}); // Object to hold the count of clients per training session
+  const [selectedTrainingId, setSelectedTrainingId] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedRoundNum, setSelectedRoundNum] = useState("");
   const [clientData, setClientData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!selectedClientId || !selectedRoundNumber) return;
-      
-      setIsLoading(true);
+    const fetchTrainingSessions = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/client_data/${selectedClientId}/${selectedRoundNumber}`);
-        setClientData({
-          ...response.data,
-          modelEvaluation: response.data.modelEvaluation ? `data:image/png;base64,${response.data.modelEvaluation}` : null,
-          globalModelComparison: response.data.globalModelComparison ? `data:image/png;base64,${response.data.globalModelComparison}` : null,
-          contributionPlot: response.data.contributionPlot ? `data:image/png;base64,${response.data.contributionPlot}` : null,
-        });
+        const userId = currentUser?.user?.id;
+        const { data } = await axios.get(
+          `http://localhost:5000/training/training_sessions/${userId}`
+        );
+        console.log(data);
+        processTrainingSessions(data); // Process the response to extract necessary details
       } catch (error) {
-        console.error('Error fetching client data:', error);
-      } finally {
-        setIsLoading(false);
+        console.error("Error fetching training sessions:", error);
       }
     };
 
-    fetchData();
-  }, [selectedClientId, selectedRoundNumber]);
+    if (currentUser) {
+      fetchTrainingSessions();
+    }
+  }, [currentUser]);
 
-  const renderDataCard = (title, content) => (
-    <div className="card my-6 bg-gray-100 p-6 shadow-md rounded-md overflow-auto">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">{title}</h2>
-      {content}
-    </div>
-  );
+  useEffect(() => {
+    const fetchClientData = async () => {
+      if (selectedTrainingId && selectedClientId && selectedRoundNum) {
+        setIsLoading(true);
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/server/get_client_data/${selectedTrainingId}/${selectedClientId}/${selectedRoundNum}`
+          );
+          console.log(response);
+          setClientData(response.data);
+        } catch (error) {
+          console.error("Error fetching client-specific data:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchClientData();
+  }, [selectedTrainingId, selectedClientId, selectedRoundNum]);
+
+  const processTrainingSessions = (sessions) => {
+    const newTrainingSessions = sessions.map((session) => session.training_id);
+    setTrainingSessions(newTrainingSessions);
+
+    const newClientCountPerSession = {};
+    sessions.forEach((session) => {
+      const numClients = session.config.num_clients;
+      newClientCountPerSession[session.training_id] = numClients;
+    });
+    setClientCounts(newClientCountPerSession);
+  };
+
+  const renderDataContent = (data, type) => {
+    if (type === "image") {
+      return <img src={`data:image/png;base64,${data}`} alt="Data Plot" />;
+    } else if (type === "text") {
+      return <p>{data}</p>;
+    } else if (type === "json") {
+      return <pre>{JSON.stringify(data, null, 2)}</pre>;
+    }
+    return <p>Data not available</p>;
+  };
 
   return (
-    <div className="max-w-4xl mx-auto my-10 p-6 bg-white shadow-md rounded-md">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Client Data Viewer</h2>
-      
+    <div className="max-w-4xl mx-auto my-10 p-6 bg-gray-800 text-white shadow-lg rounded-lg">
+      <h2 className="text-2xl font-semibold mb-6">Client Data Viewer</h2>
+
       <div className="flex space-x-4 mb-8">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Client ID</label>
-          <select className="block w-full border border-gray-300 rounded-md p-2" value={selectedClientId} onChange={(e) => setSelectedClientId(e.target.value)}>
-            <option value="">Select Client</option>
-            {/* Map through your client IDs */}
-            <option value="0">Client 0</option>
-            <option value="1">Client 1</option>
-            {/* Add more options */}
+          <label className="block text-sm font-medium mb-2">Training ID</label>
+          <select
+            className="block w-full border border-gray-500 bg-gray-700 text-white rounded-md p-2"
+            value={selectedTrainingId}
+            onChange={(e) => setSelectedTrainingId(e.target.value)}
+          >
+            <option value="">Select Training Session</option>
+            {trainingSessions.map((session, index) => (
+              <option key={index} value={session}>
+                {session}
+              </option>
+            ))}
           </select>
         </div>
-        
+
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Round Number</label>
-          <select className="block w-full border border-gray-300 rounded-md p-2" value={selectedRoundNumber} onChange={(e) => setSelectedRoundNumber(e.target.value)}>
+          <label className="block text-sm font-medium mb-2">Client ID</label>
+          <select
+            className="block w-full border border-gray-500 bg-gray-700 text-white rounded-md p-2"
+            value={selectedClientId}
+            onChange={(e) => setSelectedClientId(e.target.value)}
+          >
+            <option value="">Select Client</option>
+            {/* Hardcoded client options */}
+            <option value="0">Client 0</option>
+            <option value="1">Client 1</option>
+            <option value="2">Client 2</option>
+            <option value="3">Client 3</option>
+          </select>
+        </div>
+        <div className="flex-1">
+          <label className="block text-sm font-medium mb-2">Round Number</label>
+          <select
+            className="block w-full border border-gray-500 bg-gray-700 text-white rounded-md p-2"
+            value={selectedRoundNum}
+            onChange={(e) => setSelectedRoundNum(e.target.value)}
+          >
             <option value="">Select Round</option>
-            {/* Map through your round numbers */}
+            {/* Example: You can hardcode or dynamically populate these options */}
             <option value="1">Round 1</option>
-            <option value="2">Round 1</option>
-            <option value="3">Round 1</option>
-            {/* Add more options */}
+            <option value="2">Round 2</option>
+            {/* ... */}
           </select>
         </div>
       </div>
-
-      {isLoading ? <p>Loading data...</p> : (
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
         <div>
-          {clientData?.evaluationLogs && renderDataCard("Evaluation Logs", <pre>{JSON.stringify(clientData.evaluationLogs, null, 2)}</pre>)}
-          {clientData?.modelEvaluation && renderDataCard("Model Evaluation", <img src={clientData.modelEvaluation} alt="Model Evaluation" />)}
-          {clientData?.globalModelComparison && renderDataCard("Global Model Comparison", <img src={clientData.globalModelComparison} alt="Global Model Comparison" />)}
-          {clientData?.contributionShapleyValues && renderDataCard("Contribution Shapley Values", <pre>{JSON.stringify(clientData.contributionShapleyValues, null, 2)}</pre>)}
-          {clientData?.contributionPlot && renderDataCard("Contribution Plot", <img src={clientData.contributionPlot} alt="Contribution Plot" />)}
+          {clientData && (
+            <>
+              {clientData.eval_logs && (
+                <DataCard
+                  title="Evaluation Logs"
+                  content={renderDataContent(clientData.eval_logs, "json")}
+                />
+              )}
+              {clientData.eval_plot && (
+                <DataCard
+                  title="Evaluation Plot"
+                  content={renderDataContent(clientData.eval_plot, "image")}
+                />
+              )}
+              {clientData.eval_text && (
+                <DataCard
+                  title="Evaluation Text"
+                  content={renderDataContent(clientData.eval_text, "text")}
+                />
+              )}
+              {clientData.training_logs && (
+                <DataCard
+                  title="Training Logs"
+                  content={renderDataContent(clientData.training_logs, "json")}
+                />
+              )}
+            </>
+          )}
         </div>
       )}
     </div>

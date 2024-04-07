@@ -16,7 +16,7 @@ const serverLinks = [
   { name: "Client View", path: "/serverView/client-view" },
   { name: "Start Training", path: "/serverView/start-training" },
   { name: "View Training", path: "/serverView/view-training" },
-  { name: "Visualizations", path: "/serverView/visualizations" },
+  // { name: "Visualizations", path: "/serverView/visualizations" },
   { name: "Privacy & Security", path: "/serverView/privacy-security" },
   { name: "Global Model", path: "/serverView/global-model" },
 ];
@@ -34,7 +34,7 @@ const Server = () => {
             <Route path="client-view" element={<ClientView />} />
             <Route path="start-training" element={<StartTraining />} />
             <Route path="view-training" element={<ViewTraining />} />
-            <Route path="visualizations" element={<Visualizations />} />
+            {/* <Route path="visualizations" element={<Visualizations />} /> */}
             <Route path="privacy-security" element={<PrivacyandSecurity />} />
             <Route path="global-model" element={<GlobalModel />} />
           </Routes>

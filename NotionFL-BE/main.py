@@ -47,7 +47,7 @@ def main(training_id):
     server = FLServer(global_model)
     
     # Initialize DataCollector and FederatedXAI
-    data_collector = DataCollector(output_dir='output/data_collector')
+    data_collector = DataCollector(output_dir='output/data_collector', training_id=training_id)
     federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'], global_model=global_model, server=server)
     
     # Initializing FL clients

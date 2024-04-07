@@ -1,88 +1,165 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../../Authcontext";
+
+const DataCard = ({ title, content, isJson, isImage }) => (
+  <div className="bg-gray-700 p-4 rounded-lg shadow-sm mb-4 overflow-auto">
+    <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+    {isJson && (
+      <pre className="text-white max-w-full overflow-x-auto">{content}</pre>
+    )}
+    {isImage && (
+      <img
+        src={`data:image/png;base64,${content}`}
+        alt={title}
+        className="w-full h-auto"
+      />
+    )}
+    {!isJson && !isImage && (
+      <div className="text-white max-w-full overflow-x-auto">{content}</div>
+    )}
+  </div>
+);
 
 const GlobalModels = () => {
-  const [roundNumber, setRoundNumber] = useState('');
-  const [globalData, setGlobalData] = useState({
-    evaluationResults: null,
-    modelComparisonPlot: '',
-    shapValuesPlot: '',
-    globalModelUrl: ''
-  });
-
-  const handleRoundChange = (e) => {
-    setRoundNumber(e.target.value);
-  };
-
-  const fetchData = async (selectedRound) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/global_model_data/${selectedRound}`);
-      setGlobalData({
-        evaluationResults: response.data.evaluationResults,
-        modelComparisonPlot: `data:image/png;base64,${response.data.modelComparisonPlot}`,
-        shapValuesPlot: `data:image/png;base64,${response.data.shapValuesPlot}`,
-        globalModelUrl: response.data.globalModelUrl
-      });
-
-      // Save the URL of the global model in local storage
-      localStorage.setItem('globalModelUrl', response.data.globalModelUrl);
-      
-    } catch (error) {
-      console.error('Error fetching global model data:', error);
-    }
-  };
+  const [trainingSessions, setTrainingSessions] = useState([]);
+  const [selectedTrainingId, setSelectedTrainingId] = useState("");
+  const [globalData, setGlobalData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    if (roundNumber) {
-      fetchData(roundNumber);
-    }
-  }, [roundNumber]);
+    const fetchTrainingSessions = async () => {
+      if (currentUser?.user?.id) {
+        try {
+          const { data } = await axios.get(
+            `http://localhost:5000/training/training_sessions/${currentUser.user.id}`
+          );
+          setTrainingSessions(data);
+        } catch (error) {
+          console.error("Error fetching training sessions:", error);
+        }
+      }
+    };
+
+    fetchTrainingSessions();
+  }, [currentUser]);
+
+  useEffect(() => {
+    const fetchGlobalModelData = async () => {
+      if (selectedTrainingId) {
+        setIsLoading(true);
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/server/global_model_data/${selectedTrainingId}`
+          );
+          console.log(response);
+          setGlobalData(response.data);
+        } catch (error) {
+          console.error("Error fetching global model data:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchGlobalModelData();
+  }, [selectedTrainingId]);
 
   const downloadGlobalModel = () => {
-    const url = localStorage.getItem('globalModelUrl');
-    if (url) {
-      window.open(url, '_blank');
+    if (globalData && globalData.final_global_model) {
+      // Assuming the final_global_model is a base64 string without the prefix `data:application/octet-stream;base64,`
+      const base64 = globalData.final_global_model;
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const fileBlob = new Blob([byteArray], {
+        type: "application/octet-stream",
+      });
+      const blobUrl = URL.createObjectURL(fileBlob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `Global_Model_${selectedTrainingId}.pt`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(blobUrl); // Clean up the URL object
+      document.body.removeChild(link);
+    }
+  };
+
+  const renderDataContent = (data, type) => {
+    if (type === "image" && data) {
+      const base64String = `data:image/png;base64,${data}`;
+      return (
+        <img src={base64String} alt="Data Plot" className="w-full h-auto" />
+      );
+    } else {
+      return <p>{data}</p>;
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="mb-4">
-        <label htmlFor="roundNumber" className="block text-sm font-medium text-gray-700">Select Round Number</label>
-        <select id="roundNumber" value={roundNumber} onChange={handleRoundChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-        <option value="">Select Round Number</option>
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
+    <div className="max-w-4xl mx-auto my-10 p-6 bg-gray-800 text-white shadow-lg rounded-lg">
+      <h2 className="text-2xl font-semibold mb-6">Global Model</h2>
+
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2">Training ID</label>
+        <select
+          className="block w-full border border-gray-500 bg-gray-700 text-white rounded-md p-2"
+          value={selectedTrainingId}
+          onChange={(e) => setSelectedTrainingId(e.target.value)}
+        >
+          <option value="">Select Training Session</option>
+          {trainingSessions.map((session, index) => (
+            <option key={index} value={session.training_id}>
+              {session.training_id}
+            </option>
+          ))}
         </select>
       </div>
 
-      {globalData.evaluationResults && (
-        <div className="card p-4 shadow-md bg-white rounded-md overflow-scroll">
-          <h3 className="text-lg font-semibold">Global Model Evaluation Results</h3>
-          <pre>{JSON.stringify(globalData.evaluationResults, null, 2)}</pre>
-        </div>
-      )}
-      {globalData.modelComparisonPlot && (
-        <div className="card p-4 shadow-md bg-white">
-          <h3 className="text-lg font-semibold">Global and Client Model Comparison</h3>
-          <img src={globalData.modelComparisonPlot} alt="Model Comparison Plot" className="w-full h-auto" />
-        </div>
-      )}
-      {globalData.shapValuesPlot && (
-        <div className="card p-4 shadow-md bg-white">
-          <h3 className="text-lg font-semibold">Global SHAP Values Explanation</h3>
-          <img src={globalData.shapValuesPlot} alt="SHAP Values Plot" className="w-full h-auto" />
-        </div>
-      )}
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <div>
+          {globalData && (
+            <>
+              <DataCard
+                title="Global Model Evaluation Text"
+                content={globalData.global_model_eval}
+                isJson={false}
+              />
+              <DataCard
+                title="Global Model Confusion Matrix"
+                content={renderDataContent(
+                  globalData.global_model_cmatrix,
+                  "image"
+                )}
+                isImage={true}
+              />
+              <DataCard
+                title="Global SHAP Values Plot"
+                content={renderDataContent(
+                  globalData.global_model_shap_plot,
+                  "image"
+                )}
+                isImage={true}
+              />
 
-      <h3 className="text-lg font-semibold">Global Model Download</h3>
-      <button 
-        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 mt-4" 
-        onClick={downloadGlobalModel}
-      >
-        Download Global Model
-      </button>
+              <button
+                className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-800 to-blue-950 hover:from-blue-800 hover:to-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={downloadGlobalModel}
+              >
+                Download Global Model
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

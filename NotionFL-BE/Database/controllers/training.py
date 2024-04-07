@@ -44,6 +44,11 @@ def update_training_logs(training_id, log_file_path, update_interval=30):
 
 def start_fl_training(training_id, training_data, user_id):
     try:
+        # updating the config.yml
+        config_path = '../../config.yml'
+        with open(config_path, 'w') as config_file:
+            yaml.dump(training_data, config_file, default_flow_style=False)
+        
         # Initiate training process and save config data
         initiating_training(training_id, training_data, user_id)
         log_dir = 'training_logs'
@@ -84,6 +89,12 @@ def initiating_training(training_id, training_data, user_id):
     )
 
     training_object.save()
+    # Assign training_id to clients
+    clients = User.objects(role='client')
+    client_id_prefix = datetime.now().strftime('%Y%m%d%H%M%S')
+    for i, client in enumerate(clients[:training_data['num_clients']]):
+        client_id = f"{client_id_prefix}_{i}"
+        client.update(push__trainings=training_id, set__client_id=client_id)
 
     return training_object
 

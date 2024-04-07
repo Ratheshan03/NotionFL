@@ -10,9 +10,13 @@ from matplotlib import pyplot as plt
 import numpy as np
 import shap
 import logging
-from Database.schemas.training_schema import TrainingModel, EvaluationPlot, ModelComparison, GlobalModelData, GlobalModelEvaluation, GlobalModel, ClientData, IncentivesData, IncentiveExplanation, FileField, ClientEvaluation, ClientModel, PrivacyExplanation, GlobalModel,GlobalModelData, ContributionMetric
+from Database.schemas.training_schema import AggregationPlot,TrainingModel, EvaluationPlot, ModelComparison, GlobalModelData, GlobalModelEvaluation, GlobalModel, ClientData, IncentivesData, IncentiveExplanation, FileField, ClientEvaluation, ClientModel, PrivacyExplanation, GlobalModel,GlobalModelData, ContributionMetric
+import gzip
 import torch
 import pickle
+import gridfs
+from pymongo import MongoClient
+
 class DataCollector:
     def __init__(self, output_dir, training_id):
         self.output_dir = output_dir
@@ -58,9 +62,7 @@ class DataCollector:
             logging.info(f"Evaluation logs saved successfully for client_{client_id} for round {round} in DB.")
         else:
             logging.error(f"No training session found with ID {self.training_id}")
-
-
-            
+      
 
     def collect_client_model(self, client_id, model_state, round_num):
         training_session = TrainingModel.objects(training_id=self.training_id).first()
@@ -131,38 +133,51 @@ class DataCollector:
         else:
             logging.error(f"No training session found with ID {self.training_id}")
 
-        
 
+    def compress_model_state(model_state_dict):
+        buffer = io.BytesIO()
+        with gzip.GzipFile(fileobj=buffer, mode='wb') as f:
+            torch.save(model_state_dict, f)
+        return 
+    
+    
     def collect_client_model(self, client_id, model_state_dict, round_num, suffix=''):
+        # Define a directory to save model states
+        model_state_dir = 'output/model_states'
+        os.makedirs(model_state_dir, exist_ok=True)
+
+        # Create a file path for the model state
+        file_name = f"client_{client_id}_model_round_{round_num}{('_' + suffix) if suffix else ''}.pt"
+        model_file_path = os.path.join(model_state_dir, file_name)
+
+        # Save the model state
+        torch.save(model_state_dict, model_file_path)
+
         training_session = TrainingModel.objects(training_id=self.training_id).first()
         if not training_session:
             logging.error(f"No training session found with ID {self.training_id}")
             return
-        
-        # Serialize the model's state_dict
-        buffer = BytesIO()
-        torch.save(model_state_dict, buffer)
-        buffer.seek(0)
-        
-        # Create a ClientModel instance
+
         client_model = ClientModel(
             round_num=str(round_num),
-            model_state=buffer.getvalue(),
+            model_state=model_file_path,  # Now storing file path as a string
             suffix=suffix
         )
 
-        # Find or initialize the client data within the training session
         client_data = next((c for c in training_session.clients if c.client_id == str(client_id)), None)
         if not client_data:
             client_data = ClientData(client_id=str(client_id))
             training_session.clients.append(client_data)
         
-        # Append the new client model to the client's models list
         client_data.models.append(client_model)
-
-        # Save the updated document to the database
         training_session.save()
         logging.info(f"Client model saved for client_{client_id} in DB.")
+
+        
+    def decompress_model_state(compressed_model_state):
+        buffer = io.BytesIO(compressed_model_state)
+        with gzip.GzipFile(fileobj=buffer, mode='rb') as f:
+            return torch.load(f)
         
         
     def save_privacy_explanations(self, explanation_text, plot_buffer, client_id, round_num):
@@ -200,25 +215,23 @@ class DataCollector:
         logging.info(f"Differential privacy logs saved for round {round_num} in DB.")
         
         
-    def save_aggregation_explanation(self, aggregation_plot, round_num):
+    def save_aggregation_explanation(self, plot_buffer, round_num):
         training_session = TrainingModel.objects(training_id=self.training_id).first()
         if not training_session:
             logging.error(f"No training session found with ID {self.training_id}")
             return
 
-        # Create a BytesIO buffer to store the plot image
-        buffer = BytesIO()
-        aggregation_plot.save(buffer, format='PNG')
-        buffer.seek(0)
+        plot_buffer.seek(0)
+        plot_instance = AggregationPlot()
+        plot_instance.plot.replace(plot_buffer, filename=f'aggregation_plot_round_{round_num}.png')
+        plot_instance.save()
 
-        # Create a file in GridFS and store the plot
-        aggregation_file = training_session.aggregation_plots.create_file(buffer, filename=f'aggregation_plot_round_{round_num}.png')
-
-        # Save the file information to the training session document
-        training_session.aggregation_plots.append(aggregation_file)
+        # Reference the plot instance in the TrainingModel
+        training_session.aggregation_plots.append(plot_instance)
         training_session.save()
 
         print(f"Aggregation plot for round {round_num} saved successfully in DB.")
+
         
         
     def collect_secure_aggregation_logs(self, round_num, aggregation_metrics, time_overheads):
@@ -268,7 +281,7 @@ class DataCollector:
         print(f"Global model metrics for round {round_num} saved successfully in DB.")
 
 
-                   
+
     def collect_global_model(self, global_model_state, round_num):
         training_session = TrainingModel.objects(training_id=self.training_id).first()
         if not training_session:
@@ -278,18 +291,31 @@ class DataCollector:
         # Convert the model state to binary data
         model_binary_data = pickle.dumps(global_model_state)
 
-        # Create an instance of GlobalModel
-        global_model_instance = GlobalModel(round=str(round_num), model_state=model_binary_data)
+        # Connect to GridFS in the MongoDB database
+        db_uri = os.environ.get("MONGODB_URI") # assuming you are getting your MongoDB URI from environment variable
+        client = MongoClient(db_uri)
+        db_name = os.environ.get("DB_NAME") # getting the database name
+        db = client[db_name]
+        fs = gridfs.GridFS(db)
+
+        # Save model state to GridFS and get the file ID
+        file_id = fs.put(model_binary_data, filename=f'global_model_round_{round_num}.pkl')
+
+        # Convert the file ID to a string (if it's not already)
+        file_id_str = str(file_id)
+
+        # Create an instance of GlobalModel with the string file_id
+        global_model_instance = GlobalModel(round=str(round_num), model_state=file_id_str)
 
         # Update the global data in the database
         if training_session.global_data:
             training_session.global_data.models.append(global_model_instance)
         else:
-            # Initialize global_data if it does not exist
             training_session.global_data = GlobalModelData(models=[global_model_instance])
 
         training_session.save()
         print(f"Global model state for round {round_num} saved successfully in DB.")
+
         
           
     def collect_contribution_metrics(self, contribution_metrics, shapley_plot):
@@ -298,8 +324,11 @@ class DataCollector:
             logging.error(f"No training session found with ID {self.training_id}")
             return
 
+        # Convert all keys in the contribution_metrics dictionary to strings
+        stringified_contribution_metrics = {str(k): v for k, v in contribution_metrics.items()}
+
         # Prepare a ContributionMetric object
-        contribution_data = ContributionMetric(shapley_values=contribution_metrics)
+        contribution_data = ContributionMetric(shapley_values=stringified_contribution_metrics)
 
         # Convert the plot to a binary format and save it
         plot_buffer = io.BytesIO()
@@ -311,6 +340,7 @@ class DataCollector:
         training_session.update(set__contribution_metrics=contribution_data)
         training_session.save()
         print(f"Contribution metrics and plot for training session {self.training_id} saved successfully in DB.")
+
             
                     
     def save_incentives(self, incentives_json, incentive_plot_buf):
@@ -322,37 +352,39 @@ class DataCollector:
         # Prepare an IncentivesData object
         incentives_data = IncentivesData(incentives_json=incentives_json)
 
-        # Convert the plot to a binary format and save it
-        plot_buffer = io.BytesIO()
-        incentive_plot_buf.save(plot_buffer, format='png')
-        plot_buffer.seek(0)  # Go to the start of the buffer
-        incentives_data.incentive_plot.put(plot_buffer, content_type='image/png')
+        # Ensure buffer's pointer is at the beginning
+        incentive_plot_buf.seek(0)
+
+        # Save the plot in the IncentivesData object
+        incentives_data.incentive_plot.put(incentive_plot_buf, content_type='image/png')
 
         # Update the database
         training_session.update(set__incentives_data=incentives_data)
         training_session.save()
         print(f"Incentives data for training session {self.training_id} saved successfully in DB.")
-        
-        
-        
+
+            
     def save_incentive_explanation(self, explanation_text, plot_buffers):
         training_session = TrainingModel.objects(training_id=self.training_id).first()
         if not training_session:
             logging.error(f"No training session found with ID {self.training_id}")
             return
+        
+        # Connect to MongoDB
+        db_uri = os.environ.get("MONGODB_URI")  # Getting MongoDB URI from environment variable
+        client = MongoClient(db_uri)
+        db_name = os.environ.get("DB_NAME")  # Getting the database name
+        db = client[db_name]
+        fs = gridfs.GridFS(db)
 
         # Prepare an IncentiveExplanation object
         incentive_explanation = IncentiveExplanation(explanation_text=explanation_text, plots=[])
 
-        # Save plots
-        plot_titles = ['incentive_allocation_vs_shapley_values', 'contribution_distribution', 'contributions_vs_incentives']
-        for plot_title, plot_buf in zip(plot_titles, plot_buffers):
-            plot_buffer = io.BytesIO()
-            plot_buf.save(plot_buffer, format='png')
-            plot_buffer.seek(0)
-            plot_file = FileField()
-            plot_file.put(plot_buffer, content_type='image/png')
-            incentive_explanation.plots.append((plot_title, plot_file))
+        # Save plots to GridFS and append file IDs to plots list
+        for plot_buffer in plot_buffers:
+            plot_buffer.seek(0)  # Ensure the buffer's pointer is at the start
+            file_id = fs.put(plot_buffer, content_type='image/png')  # Save the plot to GridFS
+            incentive_explanation.plots.append(file_id)  # Append the file ID to plots
 
         # Update the database
         training_session.update(set__incentive_explanation=incentive_explanation)
@@ -373,22 +405,18 @@ class DataCollector:
         # Save evaluation text
         training_session.global_evaluation.evaluation_text = evaluation_text
 
-        # Save SHAP plot
-        shap_plot_buffer = io.BytesIO()
-        shap_plot_buf.save(shap_plot_buffer, format='png')
-        shap_plot_buffer.seek(0)
-        training_session.global_evaluation.shap_plot.replace(shap_plot_buffer, content_type='image/png')
+        # Assume shap_plot_buf and cm_plot_buf are already BytesIO objects
+        # Reset buffer pointers to the start
+        shap_plot_buf.seek(0)
+        cm_plot_buf.seek(0)
 
-        # Save Confusion Matrix plot
-        cm_plot_buffer = io.BytesIO()
-        cm_plot_buf.save(cm_plot_buffer, format='png')
-        cm_plot_buffer.seek(0)
-        training_session.global_evaluation.cm_plot.replace(cm_plot_buffer, content_type='image/png')
+        # Replace existing plot data with new data
+        training_session.global_evaluation.shap_plot.replace(shap_plot_buf, content_type='image/png')
+        training_session.global_evaluation.cm_plot.replace(cm_plot_buf, content_type='image/png')
 
         # Save changes to the database
         training_session.save()
-        
-        
+
         
 
     def collect_contribution_eval_metrics(self, round_num, contribution_metrics, shapley_plot):

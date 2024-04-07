@@ -96,32 +96,32 @@ def main(training_id):
             evaluation_text, shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_client_model(client_model_state, client.client_id, test_loader)
             data_collector.save_client_model_evaluation(client.client_id, evaluation_text, shap_plot)
 
-            # Apply differential privacy to the model parameters
-            logging.info(f"\nAdding differential privacy for client_{client.client_id}'s round {round} model")
-            dp_info = apply_differential_privacy(
-                [param for param in client.model.parameters() if param.requires_grad],
-                config['clip_threshold'],
-                config['noise_multiplier'],
-                config['device']
-            )
+            # # Apply differential privacy to the model parameters
+            # logging.info(f"\nAdding differential privacy for client_{client.client_id}'s round {round} model")
+            # dp_info = apply_differential_privacy(
+            #     [param for param in client.model.parameters() if param.requires_grad],
+            #     config['clip_threshold'],
+            #     config['noise_multiplier'],
+            #     config['device']
+            # )
             
-            # Store differential privacy metrics
-            dp_metrics['noise_distribution'] += dp_info['noise_stats']
-            dp_metrics['computation_overheads'].append(dp_info['computation_time'])
+            # # Store differential privacy metrics
+            # dp_metrics['noise_distribution'] += dp_info['noise_stats']
+            # dp_metrics['computation_overheads'].append(dp_info['computation_time'])
             
-            # Storing the client model with DP 
-            private_model_state = client.model.cpu().state_dict()
-            data_collector.collect_client_model(client.client_id, private_model_state, round, suffix='private')
+            # # Storing the client model with DP 
+            # private_model_state = client.model.cpu().state_dict()
+            # data_collector.collect_client_model(client.client_id, private_model_state, round, suffix='private')
              
-            # Explaining impact of differential privacy
-            privacy_explanation_text, privacy_plot_buffer = federated_xai.explain_privacy_impact(
-                client.client_id, round, test_loader, config['noise_multiplier']
-            )
+            # # Explaining impact of differential privacy
+            # privacy_explanation_text, privacy_plot_buffer = federated_xai.explain_privacy_impact(
+            #     client.client_id, round, test_loader, config['noise_multiplier']
+            # )
 
-            # Save the privacy explanation and plot using the DataCollector
-            data_collector.save_privacy_explanations(
-                privacy_explanation_text, privacy_plot_buffer, client.client_id, round
-            )
+            # # Save the privacy explanation and plot using the DataCollector
+            # data_collector.save_privacy_explanations(
+            #     privacy_explanation_text, privacy_plot_buffer, client.client_id, round
+            # )
             
             # Collect the model parameters for aggregation
             client_updates.append(model_updates)
@@ -145,9 +145,9 @@ def main(training_id):
         variance_after = calculate_variance([aggregated_state_dict])
         print(f'variance after {variance_after}')
         
-        # Explain aggregation Process
-        aggregated_explanation = federated_xai.explain_aggregation(pre_aggregated_state_dict, aggregated_state_dict, test_loader, round)
-        data_collector.save_aggregation_explanation(aggregated_explanation, round)
+        # # Explain aggregation Process
+        # aggregated_explanation = federated_xai.explain_aggregation(pre_aggregated_state_dict, aggregated_state_dict, test_loader, round)
+        # data_collector.save_aggregation_explanation(aggregated_explanation, round)
         
         # Evaluate performance difference
         pre_aggregation_accuracy = server.evaluate_model_state(pre_aggregated_state_dict, test_loader, config['device'])
@@ -171,13 +171,13 @@ def main(training_id):
         for client in clients:
             client.update_model(global_model.state_dict())
 
-        # Evaluate global model performance conditionally
-        if (round + 1) % config['eval_every_n_rounds'] == 0 or round == config['fl_rounds'] - 1:
-            print(f"Evaluating global model performance at round {round + 1}")
-            global_metrics = server.evaluate_global_model(test_loader, config['device'])
+        # # Evaluate global model performance conditionally
+        # if (round + 1) % config['eval_every_n_rounds'] == 0 or round == config['fl_rounds'] - 1:
+        #     print(f"Evaluating global model performance at round {round + 1}")
+        #     global_metrics = server.evaluate_global_model(test_loader, config['device'])
 
-            # Save global model metrics
-            data_collector.collect_global_model_metrics(round, global_metrics)
+        #     # Save global model metrics
+        #     data_collector.collect_global_model_metrics(round, global_metrics)
             
         # Save the global model after all rounds of training
         data_collector.collect_global_model(global_model.cpu().state_dict(), round)

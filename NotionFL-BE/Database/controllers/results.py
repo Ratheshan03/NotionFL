@@ -183,3 +183,55 @@ def get_client_specific_aggregation_data(training_id, client_id, round):
             aggregation_data[data_type] = "Not available"
 
     return aggregation_data
+
+
+
+
+def get_client_specific_evaluation_data(training_id, client_id, round):
+    file_handler = FileHandler()
+    
+    data_types = {
+        "eval_logs": f"client/evaluation/client_{client_id}_evaluation_logs_round_{round}.json",
+        "eval_plot": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot_{round}.png",
+        "eval_text": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/evaluation_{round}.txt",
+    }
+    
+    evaluation_data = {}
+    for data_type, cloud_path in data_types.items():
+        file_content = file_handler.retrieve_file(training_id, cloud_path)
+        if file_content is not None:
+            if cloud_path.endswith(".png"):
+                evaluation_data[data_type] = base64.b64encode(file_content).decode('utf-8')
+            else:
+
+                evaluation_data[data_type] = file_content
+        else:
+            evaluation_data[data_type] = "Not available"
+
+    return evaluation_data
+
+
+
+def get_client_specific_contribution_data(training_id, client_id):
+    file_handler = FileHandler()
+    
+    data_types = {
+        "contribution_distribution": f"FedXAIEvaluation/contribution_explanations/contribution_distribution.png",
+        "contribution_vs_incentives": f"FedXAIEvaluation/contribution_explanations/contributions_vs_incentives.png",
+        "contribution_allocation_vs_shap_values": f"FedXAIEvaluation/contribution_explanations/incentive_allocation_vs_shapley_values.png",
+        "incentive_explanation": f"FedXAIEvaluation/contribution_explanations/incentive_explanation.txt",
+    }
+    
+    contribution_data = {}
+    for data_type, cloud_path in data_types.items():
+        file_content = file_handler.retrieve_file(training_id, cloud_path)
+        if file_content is not None:
+            if cloud_path.endswith(".png"):
+                contribution_data[data_type] = base64.b64encode(file_content).decode('utf-8')
+            else:
+
+                contribution_data[data_type] = file_content
+        else:
+            contribution_data[data_type] = "Not available"
+
+    return contribution_data

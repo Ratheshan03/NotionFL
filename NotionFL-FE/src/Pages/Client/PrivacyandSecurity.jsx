@@ -20,7 +20,7 @@ const DataCard = ({ title, content, type }) => {
           />
         );
       case "text":
-        return <p className="text-white">{content}</p>;
+        return <pre className="text-white whitespace-pre-wrap">{content}</pre>;
       default:
         return <p>Content type not supported.</p>;
     }

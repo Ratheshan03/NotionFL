@@ -8,6 +8,7 @@ import PrivacyandSecurity from "./Client/PrivacyandSecurity";
 import Aggregation from "./Client/Aggregation";
 import ModelEvaluation from "./Client/ModelEvaluation";
 import Incentives from "./Client/Incentives";
+import Footer from "../components/Footer";
 
 const clientLinks = [
   { name: "Overview", path: "/clientView/overview" },
@@ -36,6 +37,7 @@ const Client = () => {
           </Routes>
         </ContentArea>
       </div>
+      <Footer />
     </>
   );
 };

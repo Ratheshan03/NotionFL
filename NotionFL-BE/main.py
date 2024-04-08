@@ -1,4 +1,5 @@
 import copy
+import io
 import os
 import sys
 import yaml
@@ -10,13 +11,17 @@ from FL_Core.server import FLServer
 from models.model import MNISTModel, CIFAR10Model
 from utils.secure_aggregation import calculate_variance, perform_fedavg_aggregation
 from utils.privacy_module import apply_differential_privacy
-from utils.contribution_evaluation import calculate_shapley_values
+from utils.contribution_evaluation import calculate_shapley_values, calculate_federated_shapley_values 
 from utils.data_collector import DataCollector
 from utils.federated_xai import FederatedXAI
 from utils.allocate_incentive import allocate_incentives
 from Database.controllers.training import update_training_status
+from utils.file_handler import FileHandler
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Initialize file handler
+file_handler = FileHandler()
 
 def main(training_id):
     # Load training configurations from a YAML file
@@ -171,8 +176,8 @@ def main(training_id):
             
         # Save and explain the global model after every FL rounds of training
         data_collector.collect_global_model(global_model.cpu().state_dict(), round)
-        shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_global_model(client_model_state, test_loader)
-        data_collector.save_client_model_evaluation(shap_plot, round)
+        shap_plot, (shap_numpy, test_numpy) = federated_xai.ex_global_model(client_model_state, test_loader)
+        data_collector.save_global_model_shapplot(shap_plot, round)
         
         # After explaining all client and global models after one FL round
         comparison_plot = federated_xai.compare_models(round, num_clients)
@@ -185,9 +190,25 @@ def main(training_id):
 
 
     # Load the final state of the global model
-    final_model_path = os.path.join(data_collector.output_dir, 'global', 'models', f'global_model_round_{fl_rounds-1}.pt')
-    final_model_state_dict = torch.load(final_model_path, map_location=config['device'])
-    global_model.load_state_dict(final_model_state_dict)
+    final_model_path = 'global/models/final_global_model.pt'
+    final_model_state_dict_bytes = file_handler.retrieve_file(training_id, final_model_path)
+    # Use io.BytesIO to create a file-like object from bytes
+    final_model_state_dict_stream = io.BytesIO(final_model_state_dict_bytes)
+    final_model = torch.load(final_model_state_dict_stream, map_location=config['device'])
+    global_model.load_state_dict(final_model)
+    
+    
+    # New logic for calculating Shapley values:
+    client_models, global_models = retrieve_models_from_storage(file_handler, num_clients, fl_rounds)
+        
+    # model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'], dataset_name)
+    # averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
+        
+    # new_shapley_values = calculate_federated_shapley_values(
+    #     client_models, model_evaluation_func, averaging_func, global_models=global_models
+    # )
+    # print(f"New Shapley Values for the Training: {new_shapley_values}")
+    
     
     # Define the model evaluation & averaging function
     model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'], dataset_name)
@@ -195,7 +216,7 @@ def main(training_id):
     
     # After completing all FL rounds
     shapley_values, shapley_plot = calculate_shapley_values(
-            fl_rounds, num_clients, data_collector.output_dir, 
+            fl_rounds, num_clients, client_models, global_models,
     model_evaluation_func, averaging_func, config['device']
     )
     print(f"Shapley Values for the Training: {shapley_values}")
@@ -222,6 +243,26 @@ def main(training_id):
     # Once training is complete, update the status in the database
     update_training_status(training_id, 'Completed')
 
+
+def retrieve_models_from_storage(file_handler, num_clients, total_rounds):
+    client_models = {client_id: {} for client_id in range(num_clients)}
+    global_models = {}
+
+    for round_num in range(total_rounds):
+        # Retrieve global model
+        global_model_path = f'global/models/global_model_round_{round_num}.pt'
+        global_model_state_bytes = file_handler.retrieve_file(training_id, global_model_path)
+        global_model_stream = io.BytesIO(global_model_state_bytes)
+        global_models[round_num] = torch.load(global_model_stream)
+
+        # Retrieve client models
+        for client_id in range(num_clients):
+            client_model_path = f'client/localModels/client_{client_id}_model_round_{round_num}.pt'
+            client_model_state_bytes = file_handler.retrieve_file(training_id, client_model_path)
+            client_model_stream = io.BytesIO(client_model_state_bytes)
+            client_models[client_id][round_num] = torch.load(client_model_stream)
+
+    return client_models, global_models
 
 if __name__ == "__main__":
     training_id = sys.argv[1]

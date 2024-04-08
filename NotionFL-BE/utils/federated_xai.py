@@ -59,7 +59,7 @@ class FederatedXAI:
         return evaluation_text, shap_plot_buf, (shap_numpy, test_numpy)
     
     
-    def explain_global_model(self, model_state, test_loader):
+    def ex_global_model(self, model_state, test_loader):
         # Load client model state
         model = copy.deepcopy(self.global_model)
         model.load_state_dict(model_state)
@@ -142,7 +142,7 @@ class FederatedXAI:
        # Retrieve the global model explanation from cloud storage
         global_shap_path = f'FedXAIEvaluation/globals/shap_plot_round_{round_num}.png'
         global_shap_bytes = self.file_handler.retrieve_file(self.training_id, global_shap_path)
-        global_shap_values = plt.imread(global_shap_bytes, format='png') if global_shap_bytes else None
+        global_shap_values = plt.imread(io.BytesIO(global_shap_bytes), format='png') if global_shap_bytes else None
 
         # Prepare a plot for comparison
         fig, axes = plt.subplots(1, num_clients, figsize=(20, 3))
@@ -157,7 +157,7 @@ class FederatedXAI:
         for client_id in range(num_clients):
             client_shap_path = f"FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot_round_{round_num}.png"
             client_shap_bytes = self.file_handler.retrieve_file(self.training_id, client_shap_path)
-            client_shap_values = plt.imread(client_shap_bytes, format='png') if client_shap_bytes else None
+            client_shap_values = plt.imread(io.BytesIO(client_shap_bytes), format='png') if client_shap_bytes else None
 
 
             if client_shap_values is not None:
@@ -185,18 +185,16 @@ class FederatedXAI:
 
         for client_id in range(num_clients):
             client_model_path = f'client/localModels/client_{client_id}_final_model.pt'
-            client_model_bytes = self.file_handler.retrieve_file(self.training_id, client_model_path)
-            if client_model_bytes is None:
+            client_model_state = self.file_handler.retrieve_file(self.training_id, client_model_path)
+            if client_model_state is None:
                 continue
-            
-            if client_model_bytes:
-                model_stream = io.BytesIO(client_model_bytes)
-                c_model = torch.load(model_stream)
-
-            client_model_state = torch.load(c_model)
+        
             client_model = copy.deepcopy(global_model)
             client_model.load_state_dict(client_model_state)
             client_model.to(self.device).eval()
+
+            client_explainer = shap.GradientExplainer(client_model, background)
+            client_shap_values = client_explainer.shap_values(background)
 
             client_explainer = shap.GradientExplainer(client_model, background)
             client_shap_values = client_explainer.shap_values(background)
@@ -349,13 +347,6 @@ class FederatedXAI:
         """
         Load a client's model based on the round number and suffix.
 
-        Args:
-            client_id: ID of the client.
-            round_num: The current round of training.
-            suffix: Suffix for the model filename (e.g., '_private').
-
-        Returns:
-            A loaded PyTorch model.
         """
         model_path = f'client/localModels/client_{client_id}_model_round_{round_num}{suffix}.pt'
         model_bytes = self.file_handler.retrieve_file(self.training_id, model_path)

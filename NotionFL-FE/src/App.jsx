@@ -10,6 +10,8 @@ import Login from "./components/Login";
 import "./index.css";
 import axios from "axios";
 import { AuthProvider } from "./Authcontext";
+import ProfilePage from "./Pages/Profile";
+import Documentation from "./Pages/Documentation";
 
 // Configure axios to send cookies with each request
 axios.defaults.withCredentials = true;
@@ -27,6 +29,8 @@ function App() {
             <Route path="/signupoptions" element={<SignupStartPage />} />
             <Route path="/signup/server" element={<ServerSignup />} />
             <Route path="/signup/client" element={<ClientSignup />} />
+            <Route path="/Profile" element={<ProfilePage />} />
+            <Route path="/Documentation" element={<Documentation />} />
             <Route path="/login" element={<Login />} />
             {/* Define other routes here */}
           </Routes>

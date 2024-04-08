@@ -42,11 +42,11 @@ class FileHandler:
 
     def retrieve_file(self, training_id, file_path):
         """
-            Retrieves a file from Firebase Cloud Storage based on training_id and file_path.
+        Retrieves a file from Firebase Cloud Storage based on training_id and file_path.
 
-            :param training_id: The training ID used to locate the file
-            :param file_path: The specific file path within the training ID directory
-            :return: The content of the file or None if the file does not exist
+        :param training_id: The training ID used to locate the file
+        :param file_path: The specific file path within the training ID directory
+        :return: The content of the file or None if the file does not exist
         """
         cloud_file_path = f'{self.root_folder}/{training_id}/{file_path}'
 
@@ -54,12 +54,15 @@ class FileHandler:
         blob = bucket.blob(cloud_file_path)
 
         if blob.exists():
-            if file_path.endswith('.png') or file_path.endswith('.jpg'):
+            if file_path.endswith('.png') or file_path.endswith('.jpg') or file_path.endswith('.pt'):
+                # Return as bytes for binary files (images and model state dictionaries)
                 return blob.download_as_bytes()
             else:
+                # Return as a decoded string for text files
                 return blob.download_as_string().decode('utf-8')
         else:
             return None
+
 
 
     def list_files(self, prefix):

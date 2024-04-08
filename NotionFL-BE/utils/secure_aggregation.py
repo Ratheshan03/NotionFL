@@ -37,8 +37,7 @@ def perform_fedavg_aggregation(global_state_dict, client_state_dicts):
         'aggregation_time': end_time - start_time,
         'computational_resources': {
             'cpu_usage': os.cpu_count(),
-            'memory_usage': memory_used,
-            # 'gpu_usage': ...   
+            'memory_usage': memory_used, 
         }
     }
 
@@ -92,3 +91,4 @@ def calculate_variance(models):
         for k, v in model.items():
             variance += ((v - mean_state_dict[k]) ** 2).sum().item()
     return variance / len(models)
+

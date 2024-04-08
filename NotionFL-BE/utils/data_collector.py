@@ -295,10 +295,15 @@ class DataCollector:
     def save_comparison_plot(self, plot, round_num):
         training_id = self.training_id 
         # Create directory for storing comparison plots
-        plot.seek(0)
+        plot_buffer = io.BytesIO()  # Create a buffer for the plot
+
+        # Save the plot to the buffer
+        plot.savefig(plot_buffer, format='png')
+        plot_buffer.seek(0)
         
         file_path = f'{training_id}FedXAIEvaluation/modelComparison/comparison_plot_round_{round_num}.png'
-        self.file_handler.store_file(plot.getvalue(), file_path)
+        self.file_handler.store_file(plot_buffer.getvalue(), file_path)
+        plot_buffer.close() 
         
         
     def save_evaluation_plot(self, plot_path, client_id, round_num):

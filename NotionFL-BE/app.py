@@ -1,23 +1,13 @@
-import base64
-import threading
 import os
-import yaml
-import json
-import uuid
-from io import BytesIO
-from flask import Flask, jsonify, request, send_file, url_for
+from flask import Flask
 from flask_cors import CORS
-from subprocess import Popen, PIPE
-from datetime import datetime
-from Database.controllers.auth import register_user, check_user_credentials
-from flask_jwt_extended import JWTManager, create_access_token
+from flask_jwt_extended import JWTManager
 from routes.auth_routes import auth_bp
 from routes.training_routes import training_bp
 from routes.server_routes import server_bp
 from routes.client_routes import client_bp
 from dotenv import load_dotenv
 from mongoengine import connect
-import logging
 
 # load env variables
 load_dotenv()

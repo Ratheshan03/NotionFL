@@ -6,9 +6,7 @@ matplotlib==3.8.2
 mongoengine==0.28.2
 numpy==1.26.4
 psutil==5.9.8
-psutil==5.9.5
 python-dotenv==1.0.1
-PyYAML==6.0.1
 PyYAML==6.0.1
 Requests==2.31.0
 scikit_learn==1.4.0

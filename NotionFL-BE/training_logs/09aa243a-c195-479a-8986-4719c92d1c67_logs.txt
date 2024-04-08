@@ -1,0 +1,85 @@
+2024-04-07 14:00:03,501 - INFO - 
+Training client 0 model...
+2024-04-07 14:00:22,543 - INFO - Epoch 1/3, Loss: 0.7735
+2024-04-07 14:00:47,051 - INFO - Epoch 2/3, Loss: 0.3724
+2024-04-07 14:01:10,818 - INFO - Epoch 3/3, Loss: 0.3055
+2024-04-07 14:01:10,967 - INFO - Training logs saved successfully for client_0 in DB.
+2024-04-07 14:01:10,967 - INFO - 
+Evaluating client 0 model...
+2024-04-07 14:01:14,948 - INFO - Test set: Loss: 0.1638, Accuracy: 0.9516, Precision: 0.9518, Recall: 0.9516, F1: 0.9516
+2024-04-07 14:01:14,948 - INFO - Confusion Matrix:
+[[ 968    0    1    0    0    4    2    1    4    0]
+ [   0 1113    4    2    0    2    3    1   10    0]
+ [   7    1  979   11    7    1    3    6   16    1]
+ [   0    2   10  951    0   14    2   11   15    5]
+ [   1    0    4    0  933    0   10    3    3   28]
+ [   7    2    0   20    1  833    8    1   16    4]
+ [  11    3    1    2    6    9  921    0    5    0]
+ [   4   10   18    6    7    0    0  946    2   35]
+ [   6    3    5   11    5    7    7    3  924    3]
+ [  10    6    1   10   17    6    1    5    5  948]]
+2024-04-07 14:01:15,093 - INFO - Evaluation logs saved successfully for client_0 for round 0 in DB.
+2024-04-07 14:01:15,291 - INFO - Client model saved for client_0 in DB.
+2024-04-07 14:02:22,372 - INFO - Update for client_0 saved in DB.
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-07 14:04:26,178 - INFO - Model evaluation saved for client_0 in DB.
+2024-04-07 14:04:26,186 - INFO - 
+Training client 1 model...
+2024-04-07 14:04:58,846 - INFO - Epoch 1/3, Loss: 0.2737
+2024-04-07 14:05:56,296 - INFO - Epoch 2/3, Loss: 0.2397
+2024-04-07 14:06:54,083 - INFO - Epoch 3/3, Loss: 0.2125
+2024-04-07 14:08:08,239 - INFO - Training logs saved successfully for client_1 in DB.
+2024-04-07 14:08:08,240 - INFO - 
+Evaluating client 1 model...
+2024-04-07 14:08:17,407 - INFO - Test set: Loss: 0.1210, Accuracy: 0.9632, Precision: 0.9635, Recall: 0.9632, F1: 0.9632
+2024-04-07 14:08:17,409 - INFO - Confusion Matrix:
+[[ 966    0    1    2    0    2    7    1    1    0]
+ [   0 1120    4    2    0    0    3    2    4    0]
+ [   6    1  982   11    2    0    9    9   12    0]
+ [   0    0    7  987    0    4    0    7    2    3]
+ [   0    0    4    0  936    0   13    2    2   25]
+ [   3    1    0   19    0  850    9    1    3    6]
+ [   7    3    0    1    3    6  936    0    2    0]
+ [   1    5   17    4    1    0    0  985    0   15]
+ [   5    2    5   18    3    7    9    5  910   10]
+ [   4    6    1   11   11    2    2    7    5  960]]
+2024-04-07 14:09:31,678 - INFO - Evaluation logs saved successfully for client_1 for round 0 in DB.
+2024-04-07 14:12:00,176 - INFO - Client model saved for client_1 in DB.
+2024-04-07 14:14:21,077 - INFO - Update for client_1 saved in DB.
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-07 14:17:37,528 - INFO - Model evaluation saved for client_1 in DB.
+2024-04-07 14:20:15,624 - INFO - Differential privacy logs saved for round 0 in DB.
+2024-04-07 14:20:15,648 - INFO - Performing Secure Aggregation for round: 0
+2024-04-07 14:23:07,077 - INFO - Updating client model with new global state after aggregation
+2024-04-07 14:30:39,868 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-07 14:30:39,868 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-07 14:33:14,644 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-07 14:33:14,644 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+FL Training Round 1/1
+variance before 2.099112552110455
+variance after 0.0
+Pre-aggregation accuracy 0.9632
+Post-aggregation accuracy 0.7162
+performance_difference -0.247
+Secure aggregation log for round 0 saved successfully in DB.
+Global model state for round 0 saved successfully in DB.
+Shapley Values for the Training: {0: 0.09935, 1: 0.11894999999999994}
+Contribution metrics and plot for training session 09aa243a-c195-479a-8986-4719c92d1c67 saved successfully in DB.
+Incentives data for training session 09aa243a-c195-479a-8986-4719c92d1c67 saved successfully in DB.
+Incentive explanation for training session 09aa243a-c195-479a-8986-4719c92d1c67 saved successfully in DB.
+Global Model Test set: Average loss: 2.2504, Accuracy: 0.7466
+Precision: 0.8501, Recall: 0.7466, F1 Score: 0.7406
+Confusion Matrix:
+[[ 484    0    0    3    0   42  443    1    0    7]
+ [   0 1096    0   12    0    1   24    1    0    1]
+ [   1    0  361  590    1    9   64    2    3    1]
+ [   0    0    1  982    0   19    1    0    4    3]
+ [   0    3    0    0  803    0  128    0    1   47]
+ [   0    0    0   31    0  809   48    0    1    3]
+ [   0    0    0    1    1    1  955    0    0    0]
+ [   0    2    1  172    1    1    5  469    0  377]
+ [   0    1    0  196    1   65  127    0  562   22]
+ [   0    3    0   24    7   21    9    0    0  945]]
+Training session 09aa243a-c195-479a-8986-4719c92d1c67 status updated to Completed

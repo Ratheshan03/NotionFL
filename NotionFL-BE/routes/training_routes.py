@@ -40,7 +40,6 @@ def start_training():
         
         # start training in a new thread
         training_id = str(uuid.uuid4())
-        print('-------->',training_data)
         training_sessions[training_id] = {'status': 'Started', 'logs': ''}
         thread = threading.Thread(target=start_fl_training, args=(training_id, training_data, user_id))
         thread.start()

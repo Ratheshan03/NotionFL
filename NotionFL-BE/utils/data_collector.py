@@ -86,6 +86,21 @@ class DataCollector:
 
         logging.info(f"Model for client_{client_id} successfully saved in cloud storage under training ID {training_id}, round {round_num}, with suffix '{suffix}'")
         
+        
+    def collect_final_client_model(self, client_id, model):
+        buffer = io.BytesIO()
+        torch.save(model, buffer)
+        buffer.seek(0) 
+
+        model_filename = f"client_{client_id}_final_model.pt"
+        training_id = self.training_id
+        cloud_file_path = f'{training_id}/client/localModels/{model_filename}'
+
+        # Use FileHandler to upload the data directly to Firebase Cloud Storage
+        self.file_handler.store_file(buffer.getvalue(), cloud_file_path)
+
+        logging.info(f"Final model for client_{client_id} successfully saved in cloud storage under training ID {training_id}")
+
 
     def collect_global_model_metrics(self, round_num, model_metrics):
         # Convert the metrics tuple into a dictionary
@@ -122,6 +137,21 @@ class DataCollector:
 
         logging.info(f"Global model for round {round_num} successfully saved in cloud storage under training ID {training_id}")
                 
+                
+                
+    def collect_final_global_model(self, global_model_state):
+        buffer = io.BytesIO()
+        torch.save(global_model_state, buffer)
+        buffer.seek(0)
+
+        training_id = self.training_id
+        cloud_file_path = f'{training_id}/global/models/final_global_model.pt'
+
+        self.file_handler.store_file(buffer.getvalue(), cloud_file_path)
+
+        logging.info(f"Final Global model successfully saved in cloud storage under training ID {training_id}")
+        
+                    
 
     def collect_contribution_eval_metrics(self, round_num, contribution_metrics, shapley_plot):
         contribution_metrics_json = json.dumps(contribution_metrics, indent=4)
@@ -219,6 +249,16 @@ class DataCollector:
         logging.info(f"Client model evaluation for client_{client_id} successfully saved in cloud storage under training ID {training_id}")
         
         
+    def save_global_model_shapplot(self, shap_plot_buf, round):
+        training_id = self.training_id 
+        shap_plot_buf.seek(0)
+        plot_cloud_file_path = f'{training_id}/FedXAIEvaluation/globals/shap_plot_round_{round}.png'
+
+        self.file_handler.store_file(shap_plot_buf.getvalue(), plot_cloud_file_path)
+
+        logging.info(f"Global model shap plot successfully saved in cloud storage under training ID {training_id}")
+            
+        
     def save_global_model_evaluation(self, evaluation_text, shap_plot_buf, cm_plot_buf):
         training_id = self.training_id 
         text_cloud_file_path = f'{training_id}/FedXAIEvaluation/globals/final_evaluation.txt'
@@ -252,14 +292,13 @@ class DataCollector:
         logging.info(f"Model comparison details and plots successfully saved in cloud storage under training ID {training_id}")
 
                 
-
-    # def save_comparison_plot(self, plot, round_num):
-    #         # Create directory for storing comparison plots
-    #         plot_save_dir = os.path.join(self.output_dir, 'FedXAIEvaluation', 'modelComparison')
-    #         os.makedirs(plot_save_dir, exist_ok=True)
-    #         file_path = os.path.join(plot_save_dir, f'comparison_plot_round_{round_num}.png')
+    def save_comparison_plot(self, plot, round_num):
+        training_id = self.training_id 
+        # Create directory for storing comparison plots
+        plot.seek(0)
         
-    #         plot.savefig(file_path)
+        file_path = f'{training_id}FedXAIEvaluation/modelComparison/comparison_plot_round_{round_num}.png'
+        self.file_handler.store_file(plot.getvalue(), file_path)
         
         
     def save_evaluation_plot(self, plot_path, client_id, round_num):

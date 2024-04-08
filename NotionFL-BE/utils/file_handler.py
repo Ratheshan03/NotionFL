@@ -48,18 +48,13 @@ class FileHandler:
             :param file_path: The specific file path within the training ID directory
             :return: The content of the file or None if the file does not exist
         """
-        # Construct the Cloud Storage file path
         cloud_file_path = f'{self.root_folder}/{training_id}/{file_path}'
 
-        # Create a reference to the Cloud Storage bucket
         bucket = storage.bucket()
-
-        # Create a blob (file) reference
         blob = bucket.blob(cloud_file_path)
 
         if blob.exists():
-            # Check if the file is a binary (like an image), else treat as a text file
-            if file_path.endswith('.png') or file_path.endswith('.jpg'):  # Add more binary types if necessary
+            if file_path.endswith('.png') or file_path.endswith('.jpg'):
                 return blob.download_as_bytes()
             else:
                 return blob.download_as_string().decode('utf-8')

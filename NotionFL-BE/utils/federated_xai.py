@@ -11,13 +11,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import logging
+from utils.file_handler import FileHandler
 
 class FederatedXAI:
-    def __init__(self, data_collector_path, device, global_model, server):
+    def __init__(self, data_collector_path, device, global_model, server, training_id):
         self.data_collector_path = data_collector_path
         self.device = device
         self.global_model = global_model
         self.server = server
+        self.training_id = training_id
+        self.file_handler = FileHandler()
         
         
     def explain_client_model(self, client_model_state, client_id, test_loader):
@@ -54,6 +57,41 @@ class FederatedXAI:
         plt.close()
 
         return evaluation_text, shap_plot_buf, (shap_numpy, test_numpy)
+    
+    
+    def explain_global_model(self, model_state, test_loader):
+        # Load client model state
+        model = copy.deepcopy(self.global_model)
+        model.load_state_dict(model_state)
+        model.to(self.device).eval()
+
+        self.server.evaluate_model(model, test_loader, self.device)
+
+        # Get a batch of data for SHAP explanation
+        batch = next(iter(test_loader))
+        images, _ = batch
+
+        # Use images for SHAP explanation
+        background = images[:50].to(self.device)
+        test_images = images[50:64].to(self.device)
+
+        # Create the SHAP explainer
+        explainer = shap.GradientExplainer(model, background)
+        shap_values = explainer.shap_values(test_images)
+
+        # Convert SHAP values for plotting
+        shap_numpy = [np.swapaxes(np.swapaxes(s, 1, -1), 1, 2) for s in shap_values]
+        test_numpy = np.swapaxes(np.swapaxes(test_images.cpu().numpy(), 1, -1), 1, 2)
+
+        # Generate the SHAP plot
+        shap_plot_buf = io.BytesIO()
+        plt.figure()
+        shap.image_plot(shap_numpy, -test_numpy)
+        plt.savefig(shap_plot_buf, format='png')
+        shap_plot_buf.seek(0)
+        plt.close()
+
+        return shap_plot_buf, (shap_numpy, test_numpy)
 
     
 
@@ -101,26 +139,31 @@ class FederatedXAI:
         
         
     def compare_models(self, round_num, num_clients):
-        # Load the global model explanation
-        global_shap_path = os.path.join(self.data_collector_path, 'FedXAIEvaluation', 'global', f"shap_explanation_round_{round_num}.png")
-        global_shap_values = plt.imread(global_shap_path)
+       # Retrieve the global model explanation from cloud storage
+        global_shap_path = f'FedXAIEvaluation/globals/shap_plot_round_{round_num}.png'
+        global_shap_bytes = self.file_handler.retrieve_file(self.training_id, global_shap_path)
+        global_shap_values = plt.imread(global_shap_bytes, format='png') if global_shap_bytes else None
 
         # Prepare a plot for comparison
-        fig, axes = plt.subplots(1, num_clients + 1, figsize=(20, 3))
+        fig, axes = plt.subplots(1, num_clients, figsize=(20, 3))
 
-        # Plot global model explanation
-        axes[0].imshow(global_shap_values)
-        axes[0].title.set_text('Global Model')
-        axes[0].axis('off')
+        # Plot global model explanation if available
+        if global_shap_values is not None:
+            axes[0].imshow(global_shap_values)
+            axes[0].title.set_text('Global Model')
+            axes[0].axis('off')
 
         # Load each client's explanation and plot
         for client_id in range(num_clients):
-            client_shap_path = os.path.join(self.data_collector_path, 'FedXAIEvaluation', f'client_{client_id}', f"shap_explanation_round_{round_num}.png")
-            client_shap_values = plt.imread(client_shap_path)
+            client_shap_path = f"FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot_round_{round_num}.png"
+            client_shap_bytes = self.file_handler.retrieve_file(self.training_id, client_shap_path)
+            client_shap_values = plt.imread(client_shap_bytes, format='png') if client_shap_bytes else None
 
-            axes[client_id + 1].imshow(client_shap_values)
-            axes[client_id + 1].title.set_text(f'Client {client_id} Model')
-            axes[client_id + 1].axis('off')
+
+            if client_shap_values is not None:
+                axes[client_id + 1].imshow(client_shap_values)
+                axes[client_id + 1].title.set_text(f'Client {client_id} Model')
+                axes[client_id + 1].axis('off')
 
         # Adjust layout
         plt.tight_layout()
@@ -141,11 +184,16 @@ class FederatedXAI:
         global_shap_values = global_explainer.shap_values(background)
 
         for client_id in range(num_clients):
-            client_model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_final_model.pt')
-            if not os.path.exists(client_model_path):
+            client_model_path = f'client/localModels/client_{client_id}_final_model.pt'
+            client_model_bytes = self.file_handler.retrieve_file(self.training_id, client_model_path)
+            if client_model_bytes is None:
                 continue
+            
+            if client_model_bytes:
+                model_stream = io.BytesIO(client_model_bytes)
+                c_model = torch.load(model_stream)
 
-            client_model_state = torch.load(client_model_path)
+            client_model_state = torch.load(c_model)
             client_model = copy.deepcopy(global_model)
             client_model.load_state_dict(client_model_state)
             client_model.to(self.device).eval()
@@ -309,8 +357,13 @@ class FederatedXAI:
         Returns:
             A loaded PyTorch model.
         """
-        model_path = os.path.join(self.data_collector_path, 'client', 'localModels', f'client_{client_id}_model_round_{round_num}{suffix}.pt')
-        model_state = torch.load(model_path)
+        model_path = f'client/localModels/client_{client_id}_model_round_{round_num}{suffix}.pt'
+        model_bytes = self.file_handler.retrieve_file(self.training_id, model_path)
+        
+        if model_bytes:
+            model_stream = io.BytesIO(model_bytes)
+            model_state = torch.load(model_stream)
+        
         model = copy.deepcopy(self.global_model)
         model.load_state_dict(model_state)
         model.to(self.device).eval()

@@ -48,7 +48,7 @@ def main(training_id):
     
     # Initialize DataCollector and FederatedXAI
     data_collector = DataCollector(output_dir='output/data_collector', training_id=training_id)
-    federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'], global_model=global_model, server=server)
+    federated_xai = FederatedXAI(data_collector_path=data_collector.output_dir, device=config['device'], global_model=global_model, server=server, training_id=training_id)
     
     # Initializing FL clients
     clients = [
@@ -78,7 +78,7 @@ def main(training_id):
             # Store the client model updates
             data_collector.collect_client_updates(client.client_id, model_updates)
               
-            # Explain client model each roundS
+            # Explain client model each rounds
             evaluation_text, shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_client_model(client_model_state, client.client_id, test_loader)
             data_collector.save_client_model_evaluation(client.client_id, evaluation_text, shap_plot, round)
 
@@ -114,6 +114,10 @@ def main(training_id):
 
             # Keep track of client states before aggregation for Shapley Value calculation
             client_states_before_aggregation[client.client_id] = client_model_state
+            
+            if round == fl_rounds - 1:
+                # Save final client mode state
+                data_collector.collect_final_client_model(client.client_id, client.model.cpu().state_dict())
 
         # Collect differential privacy metrics
         data_collector.collect_differential_privacy_logs(round, dp_metrics)
@@ -165,8 +169,19 @@ def main(training_id):
             # Save global model metrics
             data_collector.collect_global_model_metrics(round, global_metrics)
             
-        # Save the global model after all rounds of training
+        # Save and explain the global model after every FL rounds of training
         data_collector.collect_global_model(global_model.cpu().state_dict(), round)
+        shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_global_model(client_model_state, test_loader)
+        data_collector.save_client_model_evaluation(shap_plot, round)
+        
+        # After explaining all client and global models after one FL round
+        comparison_plot = federated_xai.compare_models(round, num_clients)
+        data_collector.save_comparison_plot(comparison_plot, round)
+        
+        
+        if round == fl_rounds - 1:
+            # Collect final global model
+            data_collector.collect_final_global_model(global_model.cpu().state_dict())
 
 
     # Load the final state of the global model
@@ -199,10 +214,6 @@ def main(training_id):
     # Explaining the global model using SHAP and storing the plots
     evaluation_text, conf_matrix, shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_global_model(test_loader)
     data_collector.save_global_model_evaluation(evaluation_text, shap_plot, conf_matrix)
-    
-    # After explaining all client and global models
-    # comparison_plot = federated_xai.compare_models(round, num_clients)
-    # data_collector.save_comparison_plot(comparison_plot, round)
 
     # Comparing and explaining client and global models
     explanations, plot_buffers = federated_xai.explain_combined_models(num_clients, test_loader)

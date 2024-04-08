@@ -7,7 +7,7 @@ class TestFLClient(unittest.TestCase):
 
     def setUp(self):
         # Mock initialization - Assume necessary parameters are passed
-        self.client = FLClient(client_id=1, model=MNISTModel(), ...)
+        self.client = FLClient(client_id=1, model=MNISTModel())
 
     def test_train_and_get_updates(self):
         # Test training and update retrieval
@@ -15,6 +15,7 @@ class TestFLClient(unittest.TestCase):
         # updates = self.client.train_and_get_updates(...)
         # self.assertIsNotNone(updates, "Updates should not be None")
         # self.assertIsInstance(updates, dict, "Updates should be a dictionary")
+        pass
 
     # More tests for other client functionalities
 

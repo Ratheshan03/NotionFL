@@ -25,6 +25,7 @@ class TestFLServer(unittest.TestCase):
         # test_loader = create_mock_test_loader()
         # accuracy = self.server.evaluate_global_model(test_loader)
         # self.assertIsInstance(accuracy, float, "Evaluation should return a float")
+        pass
 
     # Add more tests for other server functionalities
 

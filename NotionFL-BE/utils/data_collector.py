@@ -36,13 +36,12 @@ class DataCollector:
         evaluation_logs_json = json.dumps(evaluation_logs)
 
         training_id = self.training_id  
-        cloud_file_path = f'{training_id}/client/evaluation/client_{client_id}_evaluation_logs_round_{round + 1}.json'
+        cloud_file_path = f'{training_id}/client/evaluation/client_{client_id}_evaluation_logs_round_{round}.json'
 
         # Use FileHandler to upload the data directly to Firebase Cloud Storage
         self.file_handler.store_file(evaluation_logs_json, cloud_file_path)
         
-        logging.info(f"Evaluation logs for client_{client_id} successfully saved in cloud storage under training ID {training_id}, round {round + 1}")
-
+        logging.info(f"Evaluation logs for client_{client_id} successfully saved in cloud storage under training ID {training_id}, round {round}")
             
 
     def collect_client_model(self, client_id, model, round_num):
@@ -207,13 +206,13 @@ class DataCollector:
         logging.info(f"Differential privacy logs for round {round_num} successfully saved in cloud storage under training ID {training_id}")
         
     
-    def save_client_model_evaluation(self, client_id, evaluation_text, shap_plot_buf):
+    def save_client_model_evaluation(self, client_id, evaluation_text, shap_plot_buf, round):
         training_id = self.training_id 
-        text_cloud_file_path = f'{training_id}/FedXAIEvaluation/clients/client_{client_id}/evaluation/evaluation.txt'
+        text_cloud_file_path = f'{training_id}/FedXAIEvaluation/clients/client_{client_id}/evaluation/evaluation_{round}.txt'
         self.file_handler.store_file(evaluation_text, text_cloud_file_path)
         shap_plot_buf.seek(0)
 
-        plot_cloud_file_path = f'{training_id}/FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot.png'
+        plot_cloud_file_path = f'{training_id}/FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot_{round}.png'
 
         self.file_handler.store_file(shap_plot_buf.getvalue(), plot_cloud_file_path)
 

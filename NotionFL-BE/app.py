@@ -14,6 +14,7 @@ from flask_jwt_extended import JWTManager, create_access_token
 from routes.auth_routes import auth_bp
 from routes.training_routes import training_bp
 from routes.server_routes import server_bp
+from routes.client_routes import client_bp
 from dotenv import load_dotenv
 from mongoengine import connect
 import logging
@@ -38,6 +39,7 @@ jwt = JWTManager(app)
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(training_bp, url_prefix='/training')
 app.register_blueprint(server_bp, url_prefix='/server')
+app.register_blueprint(client_bp, url_prefix='/client')
 
 
 if __name__ == '__main__':

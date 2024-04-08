@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, DateTimeField, DictField, FloatField, IntField
+from mongoengine import Document, StringField, DateTimeField, ListField, DictField, FloatField, IntField
 
 class TrainingModel(Document):
     training_id = StringField(required=True, unique=True)
@@ -7,6 +7,7 @@ class TrainingModel(Document):
     status = StringField(required=True, default='Pending')
     start_time = DateTimeField()
     end_time = DateTimeField()
+    logs = ListField(StringField())
     
     def to_json(self):
         return {
@@ -15,6 +16,7 @@ class TrainingModel(Document):
             "config": self.config,
             "status": self.status,
             "start_time": self.start_time.isoformat() if self.start_time else None,
-            "end_time": self.end_time.isoformat() if self.end_time else None
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "logs": self.logs 
         }
     

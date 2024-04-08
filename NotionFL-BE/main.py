@@ -80,7 +80,7 @@ def main(training_id):
               
             # Explain client model each roundS
             evaluation_text, shap_plot, (shap_numpy, test_numpy) = federated_xai.explain_client_model(client_model_state, client.client_id, test_loader)
-            data_collector.save_client_model_evaluation(client.client_id, evaluation_text, shap_plot)
+            data_collector.save_client_model_evaluation(client.client_id, evaluation_text, shap_plot, round)
 
             # Apply differential privacy to the model parameters
             logging.info(f"\nAdding differential privacy for client_{client.client_id}'s round {round} model")

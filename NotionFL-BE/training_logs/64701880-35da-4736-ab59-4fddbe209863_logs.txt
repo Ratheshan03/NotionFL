@@ -1,0 +1,67 @@
+2024-04-08 09:02:55,738 - INFO - 
+Training client 0 model...
+2024-04-08 09:05:10,806 - INFO - Epoch 1/3, Loss: 2.3011
+2024-04-08 09:07:42,432 - INFO - Epoch 2/3, Loss: 2.2898
+2024-04-08 09:09:43,042 - INFO - Epoch 3/3, Loss: 2.2154
+2024-04-08 09:09:46,339 - INFO - Training logs for client_0 successfully saved in cloud storage under training ID 64701880-35da-4736-ab59-4fddbe209863
+2024-04-08 09:09:46,347 - INFO - 
+Evaluating client 0 model...
+2024-04-08 09:10:05,439 - INFO - Test set: Loss: 2.1184, Accuracy: 0.2690, Precision: 0.2669, Recall: 0.2690, F1: 0.2363
+2024-04-08 09:10:05,440 - INFO - Confusion Matrix:
+[[385  50   2   0   5  24  46 176 177 135]
+ [ 36 182   0   0  13  46 192 112  99 320]
+ [178  68  15   0  63  48 223 274  44  87]
+ [ 81  84   2   0  37 139 217 316  24 100]
+ [ 68  67  15   0 143  83 227 267  32  98]
+ [ 80  75   3   1  37 220 136 335  39  74]
+ [ 51  93   2   0  54  66 399 202  14 119]
+ [ 62  54   1   0  49  78 103 475  34 144]
+ [120  51   1   0   4  67  40  83 396 238]
+ [ 34 133   0   0   5  13  77 143 120 475]]
+2024-04-08 09:10:07,283 - INFO - Evaluation logs for client_0 successfully saved in cloud storage under training ID 64701880-35da-4736-ab59-4fddbe209863, round 1
+2024-04-08 09:10:19,512 - INFO - Model for client_0 successfully saved in cloud storage under training ID 64701880-35da-4736-ab59-4fddbe209863, round 0, with suffix ''
+2024-04-08 09:10:32,087 - INFO - Model update for client_0 successfully saved in cloud storage under training ID 64701880-35da-4736-ab59-4fddbe209863
+2024-04-08 09:11:58,699 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:58,759 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:58,810 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:58,851 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:58,890 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:58,955 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:58,995 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:59,033 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:59,080 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:59,122 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:59,179 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:59,231 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:59,267 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-08 09:11:59,315 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-08 09:12:09,125 - INFO - Client model evaluation for client_0 successfully saved in cloud storage under training ID 64701880-35da-4736-ab59-4fddbe209863
+2024-04-08 09:12:09,125 - INFO - 
+Adding differential privacy for client_0's round 0 model
+2024-04-08 09:12:20,865 - INFO - Model for client_0 successfully saved in cloud storage under training ID 64701880-35da-4736-ab59-4fddbe209863, round 0, with suffix 'private'
+Files already downloaded and verified
+Files already downloaded and verified
+
+FL Training Round 1/1
+Traceback (most recent call last):
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\main.py", line 217, in <module>
+    main(training_id)
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\main.py", line 103, in main
+    privacy_explanation_text, privacy_plot_buffer = federated_xai.explain_privacy_impact(
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\utils\federated_xai.py", line 247, in explain_privacy_impact
+    model = self.load_model(client_id, round_num, suffix="")
+  File "D:\Rathe\Final Year\FYP\Implementation\NotionFL\NotionFL-BE\utils\federated_xai.py", line 315, in load_model
+    model.load_state_dict(model_state)
+  File "C:\Users\prash\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\module.py", line 2153, in load_state_dict
+    raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
+RuntimeError: Error(s) in loading state_dict for CIFAR10Model:
+	Missing key(s) in state_dict: "conv3.weight", "conv3.bias", "fc3.weight", "fc3.bias". 
+	size mismatch for conv1.weight: copying a param with shape torch.Size([32, 1, 3, 3]) from checkpoint, the shape in current model is torch.Size([64, 3, 3, 3]).
+	size mismatch for conv1.bias: copying a param with shape torch.Size([32]) from checkpoint, the shape in current model is torch.Size([64]).
+	size mismatch for conv2.weight: copying a param with shape torch.Size([64, 32, 3, 3]) from checkpoint, the shape in current model is torch.Size([128, 64, 3, 3]).
+	size mismatch for conv2.bias: copying a param with shape torch.Size([64]) from checkpoint, the shape in current model is torch.Size([128]).
+	size mismatch for fc1.weight: copying a param with shape torch.Size([128, 12544]) from checkpoint, the shape in current model is torch.Size([512, 4096]).
+	size mismatch for fc1.bias: copying a param with shape torch.Size([128]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for fc2.weight: copying a param with shape torch.Size([10, 128]) from checkpoint, the shape in current model is torch.Size([256, 512]).
+	size mismatch for fc2.bias: copying a param with shape torch.Size([10]) from checkpoint, the shape in current model is torch.Size([256]).

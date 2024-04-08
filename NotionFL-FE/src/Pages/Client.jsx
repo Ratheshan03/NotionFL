@@ -20,9 +20,9 @@ const clientLinks = [
 
 const Client = () => {
   return (
-    <div className="bg-gradient-to-br from-blue-950 via-gray-900 to-black">
-      <NavBar />
-      <div className="flex">
+    <>
+      <NavBar solidBackground={true} />
+      <div className="flex" style={{ marginTop: "64px" }}>
         <SideBar links={clientLinks} />
         <ContentArea>
           <Routes>
@@ -36,7 +36,7 @@ const Client = () => {
           </Routes>
         </ContentArea>
       </div>
-    </div>
+    </>
   );
 };
 

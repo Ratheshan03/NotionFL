@@ -6,7 +6,7 @@ import yaml
 from datetime import datetime, timezone
 from subprocess import Popen
 from flask import current_app as app
-from ..schemas.user_schema import User
+from ..schemas.user_schema import User, TrainingSession
 from ..schemas.training_schema import TrainingModel
 
 def get_training_configuration():
@@ -21,17 +21,18 @@ def get_training_configuration():
     except json.JSONDecodeError:
         app.logger.error('Error decoding JSON from the training configuration file.')
         return {}
+    
 
 def update_training_logs(training_id, log_file_path, update_interval=30):
     try:
         while True:
             with open(log_file_path, 'r') as log_file:
-                logs = log_file.read()
+                logs = log_file.readlines()  # Read lines will return a list of log entries
 
             # Update the database with the latest logs
             training_session = TrainingModel.objects(training_id=training_id).first()
             if training_session:
-                training_session.update(set__logs=logs)
+                training_session.update(push_all__logs=logs)  # Push all logs to the list at once
 
             # Check if the training process is completed
             if training_session and training_session.status in ['Completed', 'Failed']:
@@ -44,11 +45,6 @@ def update_training_logs(training_id, log_file_path, update_interval=30):
 
 def start_fl_training(training_id, training_data, user_id):
     try:
-        # updating the config.yml
-        config_path = '../../config.yml'
-        with open(config_path, 'w') as config_file:
-            yaml.dump(training_data, config_file, default_flow_style=False)
-        
         # Initiate training process and save config data
         initiating_training(training_id, training_data, user_id)
         log_dir = 'training_logs'
@@ -89,12 +85,15 @@ def initiating_training(training_id, training_data, user_id):
     )
 
     training_object.save()
-    # Assign training_id to clients
-    clients = User.objects(role='client')
-    client_id_prefix = datetime.now().strftime('%Y%m%d%H%M%S')
-    for i, client in enumerate(clients[:training_data['num_clients']]):
-        client_id = f"{client_id_prefix}_{i}"
-        client.update(push__trainings=training_id, set__client_id=client_id)
+    
+    clients = User.objects(role='client').limit(training_data['num_clients'])
+
+    # Assign training_id to clients with incremental client IDs
+    for i, client in enumerate(clients):
+        client_id = str(i)  
+        training_session = TrainingSession(training_id=training_id, client_id=client_id)
+        
+        client.update(push__trainings=training_session)
 
     return training_object
 
@@ -106,6 +105,26 @@ def get_user_training_sessions(userId):
         return [session.to_json() for session in training_sessions]
     except Exception as e:
         raise e
+    
+    
+def get_client_training_sessions(user_id):
+    try:
+        user = User.objects(id=user_id).first()
+        if not user:
+            raise ValueError("User not found")
+        training_sessions = user.trainings
+        
+        training_sessions_list = [
+            {
+                "training_id": training.training_id,
+                "client_id": training.client_id
+            }
+            for training in training_sessions
+        ]
+        return training_sessions_list
+
+    except Exception as e:
+        raise Exception(f"Error fetching client training sessions: {e}")
 
 
 def update_training_status(training_id, new_status):

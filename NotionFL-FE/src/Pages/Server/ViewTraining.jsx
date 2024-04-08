@@ -47,7 +47,7 @@ const TrainingSessionCard = ({ trainingSession }) => {
 
 const ViewTraining = () => {
   const [trainingSessions, setTrainingSessions] = useState([]);
-  const { currentUser } = useAuth(); // Use your auth context to get the current user
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const fetchTrainingSessions = async () => {

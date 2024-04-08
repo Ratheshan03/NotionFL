@@ -1,8 +1,10 @@
 import threading
 import uuid
 from flask import Blueprint, jsonify, request
+import yaml
 from Database.controllers.training import get_training_configuration
-from Database.controllers.training import start_fl_training, get_user_training_sessions
+from Database.controllers.training import start_fl_training, get_client_training_sessions, get_user_training_sessions
+
 
 training_bp = Blueprint('training_bp', __name__)
 training_sessions = {} 
@@ -40,8 +42,11 @@ def start_training():
         
         # start training in a new thread
         training_id = str(uuid.uuid4())
-        print('-------->',training_data)
         training_sessions[training_id] = {'status': 'Started', 'logs': ''}
+        
+        with open('config.yml', 'w') as config_file:
+            yaml.dump(training_data, config_file, default_flow_style=False)
+        
         thread = threading.Thread(target=start_fl_training, args=(training_id, training_data, user_id))
         thread.start()
 
@@ -59,5 +64,3 @@ def user_training_sessions(userId):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
     
-
-

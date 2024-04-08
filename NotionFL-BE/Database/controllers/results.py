@@ -108,3 +108,78 @@ def get_global_data(training_id):
     return privacy_data
 
 
+#  Client Results Route Helper Functions
+
+
+def get_client_specific_training_data(training_id, client_id, round):
+    file_handler = FileHandler()
+    
+    # paths in the cloud storage
+    data_types = {
+        "eval_logs": f"client/evaluation/client_{client_id}_evaluation_logs_round_{round}.json",
+        "training_logs": f"client/training/client_{client_id}_training_logs.json",
+        "eval_plot": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot_{round}.png",
+        "eval_text": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/evaluation_{round}.txt",
+    }
+
+    training_data = {}
+    for data_type, cloud_path in data_types.items():
+        file_content = file_handler.retrieve_file(training_id, cloud_path)
+        if file_content is not None:
+            if cloud_path.endswith(".png"):
+                # If it's an image, convert to base64 for JSON serialization
+                training_data[data_type] = base64.b64encode(file_content).decode()
+            else:
+                training_data[data_type] = file_content
+        else:
+            training_data[data_type] = "Not available"
+
+    return training_data
+    
+
+def get_client_specific_privacy_data(training_id, client_id, round):
+    file_handler = FileHandler()
+    
+    data_types = {
+        "privacy_explanation": f"FedXAIEvaluation/privacy_explanations/interpretation_client_{client_id}_round_{round}.txt",
+        "privacy_explanation_plot": f"FedXAIEvaluation/privacy_explanations/visualizations/impact_visualization_client_{client_id}_round_{round}.png",
+        "dp_json": f"privacy/differential_privacy_round_{round}.json",
+    }
+    
+    privacy_data = {}
+    for data_type, cloud_path in data_types.items():
+        file_content = file_handler.retrieve_file(training_id, cloud_path)
+        if file_content is not None:
+            if cloud_path.endswith(".png"):
+                privacy_data[data_type] = base64.b64encode(file_content).decode('utf-8')
+            else:
+
+                privacy_data[data_type] = file_content
+        else:
+            privacy_data[data_type] = "Not available"
+
+    return privacy_data
+
+
+
+def get_client_specific_aggregation_data(training_id, client_id, round):
+    file_handler = FileHandler()
+    
+    data_types = {
+        "aggregation_plot": f"FedXAIEvaluation/aggregation_explanation/aggregation_plot_round_{round}.png",
+        "aggregation_json": f"aggregation/secure_aggregation_round_{round}.json",
+    }
+    
+    aggregation_data = {}
+    for data_type, cloud_path in data_types.items():
+        file_content = file_handler.retrieve_file(training_id, cloud_path)
+        if file_content is not None:
+            if cloud_path.endswith(".png"):
+                aggregation_data[data_type] = base64.b64encode(file_content).decode('utf-8')
+            else:
+
+                aggregation_data[data_type] = file_content
+        else:
+            aggregation_data[data_type] = "Not available"
+
+    return aggregation_data

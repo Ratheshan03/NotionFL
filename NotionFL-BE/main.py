@@ -61,6 +61,9 @@ def main(training_id):
         for i in range(num_clients)
     ]
 
+    client_weights = []
+    total_data_points = 0
+    
     # Federated Learning Process
     for round in range(fl_rounds):
         print(f"\nFL Training Round {round + 1}/{fl_rounds}")
@@ -71,8 +74,10 @@ def main(training_id):
         
         for client in clients:
             # local training and getting model updates
-            model_updates = client.train_and_get_updates(epochs, lr)
-
+            model_updates, data_size = client.train_and_get_updates(epochs, lr)
+            client_weights.append(data_size)
+            total_data_points += data_size
+            
             # Evaluate client performance and save metrics
             client.evaluate(round)
             
@@ -122,23 +127,26 @@ def main(training_id):
             
             if round == fl_rounds - 1:
                 # Save final client mode state
-                data_collector.collect_final_client_model(client.client_id, client.model.cpu().state_dict())
+                data_collector.collect_final_client_model(client.client_id, client_model_state)
 
         # Collect differential privacy metrics
         data_collector.collect_differential_privacy_logs(round, dp_metrics)
         
         # Calculate variance before aggregation
         variance_before = calculate_variance(client_updates)
-        print(f'variance before {variance_before}')
+        print(f'variance before aggregation {variance_before}')
+        
+        # After collecting updates from all clients
+        client_weights = [size / total_data_points for size in client_weights]
 
         # Perform FedAvg aggregation
         logging.info(f'Performing Secure Aggregation for round: {round}')
         pre_aggregated_state_dict = copy.deepcopy(global_model.state_dict())
-        aggregated_state_dict, time_overheads = perform_fedavg_aggregation(global_model.state_dict(), client_updates)
+        aggregated_state_dict, time_overheads = perform_fedavg_aggregation(global_model.state_dict(), client_updates, client_weights)
 
         # Calculate variance after aggregation
         variance_after = calculate_variance([aggregated_state_dict])
-        print(f'variance after {variance_after}')
+        print(f'variance after aggregation {variance_after}')
         
         # Explain aggregation Process
         aggregated_explanation = federated_xai.explain_aggregation(pre_aggregated_state_dict, aggregated_state_dict, test_loader, round)
@@ -158,6 +166,8 @@ def main(training_id):
         aggregation_metrics = {
             'variance_before_aggregation': variance_before,
             'variance_after_aggregation': variance_after,
+            'pre_aggregation_accuracy': pre_aggregation_accuracy,
+            'post_aggregation_accuracy': post_aggregation_accuracy,
             'performance_difference': performance_difference
         }
         data_collector.collect_secure_aggregation_logs(round, aggregation_metrics, time_overheads)
@@ -183,34 +193,19 @@ def main(training_id):
         comparison_plot = federated_xai.compare_models(round, num_clients)
         data_collector.save_comparison_plot(comparison_plot, round)
         
-        
         if round == fl_rounds - 1:
             # Collect final global model
             data_collector.collect_final_global_model(global_model.cpu().state_dict())
 
-
     # Load the final state of the global model
     final_model_path = 'global/models/final_global_model.pt'
     final_model_state_dict_bytes = file_handler.retrieve_file(training_id, final_model_path)
-    # Use io.BytesIO to create a file-like object from bytes
     final_model_state_dict_stream = io.BytesIO(final_model_state_dict_bytes)
     final_model = torch.load(final_model_state_dict_stream, map_location=config['device'])
     global_model.load_state_dict(final_model)
     
-    
-    # New logic for calculating Shapley values:
-    client_models, global_models = retrieve_models_from_storage(file_handler, num_clients, fl_rounds)
-        
-    # model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'], dataset_name)
-    # averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
-        
-    # new_shapley_values = calculate_federated_shapley_values(
-    #     client_models, model_evaluation_func, averaging_func, global_models=global_models
-    # )
-    # print(f"New Shapley Values for the Training: {new_shapley_values}")
-    
-    
-    # Define the model evaluation & averaging function
+    client_models, global_models = retrieve_models_from_storage(file_handler, num_clients, fl_rounds)  
+    # Model evaluation & averaging function
     model_evaluation_func = lambda model_state: server.evaluate_model_state_dict(model_state, test_loader, config['device'], dataset_name)
     averaging_func = lambda model_states: server.fedavg_aggregate(model_states)
     

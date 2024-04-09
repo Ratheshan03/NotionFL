@@ -1,13 +1,10 @@
 import io
-import shutil
-import tempfile
 import matplotlib
 matplotlib.use('Agg')
 import json
 import os
 from matplotlib import pyplot as plt
 import numpy as np
-import shap
 import logging
 from utils.file_handler import FileHandler
 import torch
@@ -18,17 +15,24 @@ class DataCollector:
         self.training_id = training_id
         self.file_handler = FileHandler()
 
-    def collect_client_training_logs(self, client_id, training_logs):
+    def collect_client_training_logs(self, client_id, training_logs, performance_plot):
         # Serialize the training logs to a JSON string
         training_logs_json = json.dumps(training_logs)
-
-        training_id = self.training_id  # Retrieve training_id
+        training_id = self.training_id
+        
         cloud_file_path = f'{training_id}/client/training/client_{client_id}_training_logs.json'
-
-        # Use FileHandler to upload the data directly to Firebase Cloud Storage
         self.file_handler.store_file(training_logs_json, cloud_file_path)
         
-        logging.info(f"Training logs for client_{client_id} successfully saved in cloud storage under training ID {training_id}")
+       # Store performance plot
+        if performance_plot:  # Check if plot object exists
+            plot_buffer = io.BytesIO()
+            performance_plot.savefig(plot_buffer, format='png')
+            plot_buffer.seek(0)
+            plot_file_path = f'{training_id}/client/training/client_{client_id}_performance_plot.png'
+            self.file_handler.store_file(plot_buffer.getvalue(), plot_file_path)
+
+            
+        logging.info(f"Training logs,plot for client_{client_id} successfully saved in cloud storage under training ID {training_id}")
 
         
     def collect_client_evaluation_logs(self, client_id, evaluation_logs, round):
@@ -177,15 +181,16 @@ class DataCollector:
     
     def collect_contribution_metrics(self, contribution_metrics, shapley_plot):
         contribution_metrics_json = json.dumps(contribution_metrics, indent=4)
-        cloud_metrics_path = 'client/contribution/clients_shapley_values.json'
+        training_id = self.training_id
+        cloud_metrics_path = f'{training_id}/client/contribution/clients_shapley_values.json'
 
         self.file_handler.store_file(contribution_metrics_json, cloud_metrics_path)
         
         buffer = io.BytesIO()
         shapley_plot.savefig(buffer, format='png')
         buffer.seek(0) 
-
-        cloud_plot_path = 'client/contribution/clients_contribution_plot.png'
+        training_id = self.training_id
+        cloud_plot_path = f'{training_id}/client/contribution/clients_contribution_plot.png'
 
         self.file_handler.store_file(buffer.getvalue(), cloud_plot_path)
 
@@ -196,12 +201,13 @@ class DataCollector:
     
     def save_incentives(self, incentives_json, incentive_plot_buf):
         incentives_json_string = json.dumps(incentives_json, indent=4)
-        cloud_json_path = 'client/contribution/clients_incentives.json'
+        training_id = self.training_id
+        cloud_json_path = f'{training_id}/client/contribution/clients_incentives.json'
         self.file_handler.store_file(incentives_json_string, cloud_json_path)
 
         incentive_plot_buf.seek(0)
-
-        cloud_plot_path = 'client/contribution/initial_incentive_plot.png'
+        
+        cloud_plot_path = f'{training_id}/client/contribution/initial_incentive_plot.png'
 
         self.file_handler.store_file(incentive_plot_buf.getvalue(), cloud_plot_path)
 
@@ -281,7 +287,7 @@ class DataCollector:
         for client_id, explanation in explanations.items():
             explanation_json = json.dumps(explanation, indent=4)
 
-            explanation_cloud_path = f'{training_id}/FedXAIEvaluation/clients/client_{client_id}/comparison_details.json'
+            explanation_cloud_path = f'{training_id}/FedXAIEvaluation/modelComparison/client_{client_id}/comparison_details.json'
             self.file_handler.store_file(explanation_json, explanation_cloud_path)
 
             plot_buffers[client_id].seek(0)
@@ -301,7 +307,7 @@ class DataCollector:
         plot.savefig(plot_buffer, format='png')
         plot_buffer.seek(0)
         
-        file_path = f'{training_id}FedXAIEvaluation/modelComparison/comparison_plot_round_{round_num}.png'
+        file_path = f'{training_id}/FedXAIEvaluation/modelComparison/comparison_plot_round_{round_num}.png'
         self.file_handler.store_file(plot_buffer.getvalue(), file_path)
         plot_buffer.close() 
         
@@ -320,13 +326,11 @@ class DataCollector:
         
         
     def save_aggregation_explanation(self, aggregation_plot, round_num):
+        training_id = self.training_id
         aggregation_plot.seek(0)
-        training_id = self.training_id 
         cloud_file_path = f'{training_id}/FedXAIEvaluation/aggregation_explanation/aggregation_plot_round_{round_num}.png'
-
         self.file_handler.store_file(aggregation_plot.getvalue(), cloud_file_path)
-
-        logging.info(f"Aggregation plot for round {round_num} successfully saved in cloud storage under training ID {training_id}")
+        logging.info(f"Aggregation explanation plot for round {round_num} successfully saved in cloud storage under training ID {training_id}")
 
     
     def save_privacy_explanations(self, explanation_text, plot_buffer, client_id, round_num):

@@ -1,15 +1,11 @@
 import copy
 import io
-import os
 import shap
 import torch
-import json
 import numpy as np
 import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay
 import logging
 from utils.file_handler import FileHandler
 
@@ -92,7 +88,6 @@ class FederatedXAI:
         plt.close()
 
         return shap_plot_buf, (shap_numpy, test_numpy)
-
     
 
     def explain_global_model(self, test_loader):
@@ -139,38 +134,35 @@ class FederatedXAI:
         
         
     def compare_models(self, round_num, num_clients):
-       # Retrieve the global model explanation from cloud storage
         global_shap_path = f'FedXAIEvaluation/globals/shap_plot_round_{round_num}.png'
         global_shap_bytes = self.file_handler.retrieve_file(self.training_id, global_shap_path)
         global_shap_values = plt.imread(io.BytesIO(global_shap_bytes), format='png') if global_shap_bytes else None
 
-        # Prepare a plot for comparison
-        fig, axes = plt.subplots(1, num_clients, figsize=(20, 3))
+        fig, axes = plt.subplots(1, max(num_clients, 2), figsize=(20, 3))
 
-        # Plot global model explanation if available
+        # If there is only one client, axes is a single object, not a list
+        if num_clients == 1:
+            axes = [axes]
+
         if global_shap_values is not None:
             axes[0].imshow(global_shap_values)
             axes[0].title.set_text('Global Model')
             axes[0].axis('off')
 
-        # Load each client's explanation and plot
         for client_id in range(num_clients):
             client_shap_path = f"FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot_round_{round_num}.png"
             client_shap_bytes = self.file_handler.retrieve_file(self.training_id, client_shap_path)
             client_shap_values = plt.imread(io.BytesIO(client_shap_bytes), format='png') if client_shap_bytes else None
-
 
             if client_shap_values is not None:
                 axes[client_id + 1].imshow(client_shap_values)
                 axes[client_id + 1].title.set_text(f'Client {client_id} Model')
                 axes[client_id + 1].axis('off')
 
-        # Adjust layout
         plt.tight_layout()
-        
         return plt
-    
-    
+
+    # Needs to be fixed
     def explain_combined_models(self, num_clients, data_loader):
         explanations = {}
         plot_buffers = {}
@@ -182,35 +174,41 @@ class FederatedXAI:
 
         global_explainer = shap.GradientExplainer(global_model, background)
         global_shap_values = global_explainer.shap_values(background)
+        global_shap_flat = np.array(global_shap_values).reshape(-1)
 
         for client_id in range(num_clients):
             client_model_path = f'client/localModels/client_{client_id}_final_model.pt'
-            client_model_state = self.file_handler.retrieve_file(self.training_id, client_model_path)
-            if client_model_state is None:
+            client_model_bytes = self.file_handler.retrieve_file(self.training_id, client_model_path)
+            if client_model_bytes is None:
                 continue
-        
+
+            model_stream = io.BytesIO(client_model_bytes)
+            client_model_state = torch.load(model_stream)
+
             client_model = copy.deepcopy(global_model)
             client_model.load_state_dict(client_model_state)
             client_model.to(self.device).eval()
 
             client_explainer = shap.GradientExplainer(client_model, background)
             client_shap_values = client_explainer.shap_values(background)
+            
+            # Handle SHAP values, ensuring they are flattened and have the same dimensions
+            client_shap_flat = np.array(client_shap_values).reshape(-1) if isinstance(client_shap_values, np.ndarray) else np.array(client_shap_values[0]).reshape(-1)
 
-            client_explainer = shap.GradientExplainer(client_model, background)
-            client_shap_values = client_explainer.shap_values(background)
+            # Check if dimensions match before comparison
+            if global_shap_flat.shape[0] != client_shap_flat.shape[0]:
+                print(f"Dimension mismatch for client {client_id}: Global SHAP {global_shap_flat.shape}, Client SHAP {client_shap_flat.shape}")
+                continue
 
-            # Calculate differences and generate plot
-            global_shap_flat = np.array(global_shap_values).reshape(-1)
-            client_shap_flat = np.array(client_shap_values).reshape(-1)
+            # Calculate mean absolute difference in SHAP values
             differences = np.abs(global_shap_flat - client_shap_flat).mean(axis=0)
 
-            plt.figure(figsize=(10, 6))
-            plt.barh(np.arange(30), differences[:30])
-            plt.xlabel('Mean Absolute Difference in SHAP Value')
-            plt.title(f'Impact of Client {client_id} Model on Global Model')
-            plt.gca().invert_yaxis()
-            plt.tight_layout()
-
+            # Plotting the comparison
+            plt.figure(figsize=(10, 4))
+            plt.bar(['Global Model', f'Client {client_id} Model'], [global_shap_flat.mean(), client_shap_flat.mean()])
+            plt.ylabel('Mean SHAP Value')
+            plt.title(f'Comparison of Mean SHAP Values: Global vs Client {client_id}')
+            
             plot_buf = io.BytesIO()
             plt.savefig(plot_buf, format='png')
             plot_buf.seek(0)
@@ -218,17 +216,16 @@ class FederatedXAI:
 
             # Store results
             explanations[client_id] = {
-                'global': global_shap_values.tolist(),
-                'client': client_shap_values.tolist(),
+                'global': global_shap_values[0].tolist() if isinstance(global_shap_values, list) else global_shap_values.tolist(),
+                'client': client_shap_values[0].tolist() if isinstance(client_shap_values, list) else client_shap_values.tolist(),
                 'difference': differences.tolist()
             }
             plot_buffers[client_id] = plot_buf
 
         return explanations, plot_buffers
-
-
+    
+    
     def explain_aggregation(self, pre_aggregated_state, post_aggregated_state, data_loader, round_num):
-        # Load the global model states into new model instances
         global_model_pre = copy.deepcopy(self.global_model)
         global_model_pre.load_state_dict(pre_aggregated_state)
         global_model_pre.to(self.device).eval()
@@ -237,7 +234,6 @@ class FederatedXAI:
         global_model_post.load_state_dict(post_aggregated_state)
         global_model_post.to(self.device).eval()
 
-        # Calculate SHAP values
         background, _ = next(iter(data_loader))
         background = background[:50].to(self.device)
         explainer_pre = shap.GradientExplainer(global_model_pre, background)
@@ -245,33 +241,86 @@ class FederatedXAI:
         shap_values_pre = explainer_pre.shap_values(background)
         shap_values_post = explainer_post.shap_values(background)
 
-        # Reshape SHAP values if they are not in 2D format (for image data)
+
         def reshape_shap_values(shap_values):
             if isinstance(shap_values, list):
                 return [val.reshape(val.shape[0], -1) for val in shap_values]
             return shap_values
 
+
+        def capture_shap_summary_plot(shap_values, num_features=10):
+            fig, ax = plt.subplots(1, 1)
+            shap.summary_plot(shap_values, plot_type="bar", max_display=num_features, show=False)
+            fig.canvas.draw()
+            image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
+            image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+            plt.close(fig)
+            return image
+        
+        # Predictions comparison
+        def compare_predictions(model_pre, model_post, data_loader):
+            inputs, labels = next(iter(data_loader))
+            inputs = inputs.to(self.device)
+            
+            with torch.no_grad():
+                preds_pre = model_pre(inputs).cpu().numpy()
+                preds_post = model_post(inputs).cpu().numpy()
+            
+            return inputs.cpu().numpy(), labels.cpu().numpy(), preds_pre, preds_post
+
+        inputs, labels, preds_pre, preds_post = compare_predictions(global_model_pre, global_model_post, data_loader)
+
+        # Accuracy comparison
+        def calculate_accuracy(model, data_loader):
+            correct, total = 0, 0
+            with torch.no_grad():
+                for inputs, labels in data_loader:
+                    inputs, labels = inputs.to(self.device), labels.to(self.device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs.data, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            return correct / total
+
+        accuracy_pre = calculate_accuracy(global_model_pre, data_loader)
+        accuracy_post = calculate_accuracy(global_model_post, data_loader)
+
         shap_values_pre_reshaped = reshape_shap_values(shap_values_pre)
         shap_values_post_reshaped = reshape_shap_values(shap_values_post)
 
-        logging.info('Generating Aggregation explanation plot for global model')
-        
-        # Generate comparison plot
-        plt.figure(figsize=(20, 10))
-        plt.subplot(1, 2, 1)
-        shap.summary_plot(shap_values_pre_reshaped, show=False)
-        plt.title('Global Model Pre-Aggregation')
+        pre_agg_shap_image = capture_shap_summary_plot(shap_values_pre_reshaped)
+        post_agg_shap_image = capture_shap_summary_plot(shap_values_post_reshaped)
 
-        plt.subplot(1, 2, 2)
-        shap.summary_plot(shap_values_post_reshaped, show=False)
-        plt.title('Global Model Post-Aggregation')
+        fig, axs = plt.subplots(3, 2, figsize=(20, 15))
 
-        # Save plot to a buffer
+        num_examples = min(len(background), 3)
+        for i in range(num_examples):
+            axs[i, 0].imshow(inputs[i].transpose(1, 2, 0))
+            axs[i, 0].set_title(f'Label: {labels[i]}, Pred Pre: {preds_pre[i]}, Pred Post: {preds_post[i]}')
+            axs[i, 0].axis('off')
+
+        for j in range(num_examples, 3):
+            axs[j, 0].axis('off')
+
+        axs[0, 1].imshow(pre_agg_shap_image)
+        axs[0, 1].axis('off')
+        axs[0, 1].set_title('Global Model Pre-Aggregation')
+
+        axs[1, 1].imshow(post_agg_shap_image)
+        axs[1, 1].axis('off')
+        axs[1, 1].set_title('Global Model Post-Aggregation')
+
+        # Accuracy comparison plot
+        axs[2, 1].bar(['Pre-Aggregation', 'Post-Aggregation'], [accuracy_pre, accuracy_post])
+        axs[2, 1].set_title('Model Accuracy Comparison')
+        axs[2, 1].set_ylim(0, 1)
+
+        plt.tight_layout()
         plot_buffer = io.BytesIO()
         plt.savefig(plot_buffer, format='png')
         plt.close()
         plot_buffer.seek(0)
-        
+
         return plot_buffer
 
     

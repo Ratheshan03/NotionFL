@@ -21,7 +21,7 @@ const LandingPage = () => {
           Welcome to NotionFL
         </h1>
         <p className="text-md md:text-lg mb-8 text-center">
-          The Trustworthy Explainable ediator for Cross-Silo Federated Learning
+          The Trustworthy Explainable Mediator for Cross-Silo Federated Learning
         </p>
         <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-4 md:space-y-0">
           <button

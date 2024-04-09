@@ -1,8 +1,6 @@
 import itertools
 import copy
 import math
-import os
-import torch
 import matplotlib.pyplot as plt
 
 
@@ -102,59 +100,3 @@ def create_shapley_value_plot(shapley_values):
     plt.xticks(clients, [f'Client {client}' for client in clients])
 
     return fig
-
-
-def calculate_federated_shapley_values(client_models, model_evaluation_func, averaging_func, global_models=None, cache=None):
-    """
-    Calculates Shapley values for clients in federated learning.
-
-    :param client_models: Dict of client model states for each round {client_id: {round_num: model_state}}.
-    :param model_evaluation_func: Function to evaluate a model's performance.
-    :param averaging_func: Function to average model states.
-    :param global_models: (Optional) Dict of global model states for each round {round_num: model_state}.
-    :param cache: (Optional) Cache to store intermediate computations.
-    :return: Dict of calculated Shapley values for each client.
-    """
-
-    if cache is None:
-        cache = {}
-
-    sv = {client_id: 0 for client_id in client_models.keys()}
-
-    # Iterate over all possible combinations of clients
-    for subset in itertools.chain.from_iterable(itertools.combinations(client_models.keys(), r) for r in range(1, len(client_models) + 1)):
-        for client_id in subset:
-            without_client = tuple(sorted(set(subset) - {client_id}))
-            with_client = tuple(sorted(set(subset)))
-
-            # Check cache to avoid redundant computation
-            if with_client in cache:
-                value_with = cache[with_client]
-            else:
-                combined_model = averaging_func([copy.deepcopy(client_models[other_client_id]) for other_client_id in with_client])
-                value_with = model_evaluation_func(combined_model)
-                cache[with_client] = value_with
-
-            if without_client in cache:
-                value_without = cache[without_client]
-            else:
-                if without_client:
-                    combined_model = averaging_func([copy.deepcopy(client_models[other_client_id]) for other_client_id in without_client])
-                    value_without = model_evaluation_func(combined_model)
-                else:
-                    # Use global model if available and no other clients are in subset
-                    value_without = model_evaluation_func(global_models) if global_models else 0
-                cache[without_client] = value_without
-
-            # Compute the marginal contribution
-            marginal_contribution = value_with - value_without
-
-            # Calculate Shapley Value
-            sv[client_id] += marginal_contribution / len(subset)
-
-    # Average the Shapley Values over all permutations
-    total_permutations = len(list(itertools.permutations(client_models.keys())))
-    for client_id in sv:
-        sv[client_id] /= total_permutations
-
-    return sv

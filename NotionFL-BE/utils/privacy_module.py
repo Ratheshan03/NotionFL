@@ -28,3 +28,4 @@ def apply_differential_privacy(model_parameters, clip_threshold, noise_multiplie
     computation_time = time.time() - start_time
     
     return {'noise_stats': noise_stats, 'computation_time': computation_time}
+

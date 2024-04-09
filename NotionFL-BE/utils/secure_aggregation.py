@@ -4,13 +4,14 @@ import torch
 import copy
 import psutil
 
-def perform_fedavg_aggregation(global_state_dict, client_state_dicts):
+def perform_fedavg_aggregation(global_state_dict, client_state_dicts, client_weights):
     """
-    Perform Federated Averaging aggregation, calculate time taken, and estimate computational resources.
+    Perform Federated Averaging aggregation using weights.
 
     Args:
         global_state_dict (OrderedDict): The state_dict of the global model to be updated.
         client_state_dicts (list of OrderedDict): List of state_dicts from client models.
+        client_weights (list): List of weights for each client model based on the data size.
 
     Returns:
         OrderedDict: Updated state_dict for the global model.
@@ -20,14 +21,13 @@ def perform_fedavg_aggregation(global_state_dict, client_state_dicts):
         raise ValueError("No client model state_dicts provided for aggregation.")
 
     start_time = time.time()
-    start_memory = psutil.virtual_memory() 
+    start_memory = psutil.virtual_memory()
 
-    num_clients = len(client_state_dicts)
     aggregated_state_dict = copy.deepcopy(global_state_dict)
 
     # Aggregate each parameter
     for key in aggregated_state_dict.keys():
-        aggregated_state_dict[key] = sum(client_state_dict[key] for client_state_dict in client_state_dicts) / num_clients
+        aggregated_state_dict[key] = sum(client_state_dict[key] * weight for client_state_dict, weight in zip(client_state_dicts, client_weights)) / sum(client_weights)
 
     end_time = time.time()
     end_memory = psutil.virtual_memory()
@@ -37,12 +37,11 @@ def perform_fedavg_aggregation(global_state_dict, client_state_dicts):
         'aggregation_time': end_time - start_time,
         'computational_resources': {
             'cpu_usage': os.cpu_count(),
-            'memory_usage': memory_used, 
+            'memory_usage': memory_used,
         }
     }
 
     return aggregated_state_dict, time_overheads
-
 
 
 def average_model_states(base_model, model_states):

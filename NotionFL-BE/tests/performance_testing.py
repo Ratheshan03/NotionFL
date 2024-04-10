@@ -53,7 +53,7 @@ def performance_test():
         })
         print(f"Config: {config}, Duration: {duration} seconds, Status: {status}")
 
-    # Save the performance results to a file
+
     with open('performance_results.json', 'w') as file:
         json.dump(performance_results, file, indent=4)
 

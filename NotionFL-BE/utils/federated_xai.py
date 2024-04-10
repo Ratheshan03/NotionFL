@@ -392,24 +392,6 @@ class FederatedXAI:
         return interpretation_text, buf
         
     
-    def load_model(self, client_id, round_num, suffix):
-        """
-        Load a client's model based on the round number and suffix.
-
-        """
-        model_path = f'client/localModels/client_{client_id}_model_round_{round_num}{suffix}.pt'
-        model_bytes = self.file_handler.retrieve_file(self.training_id, model_path)
-        
-        if model_bytes:
-            model_stream = io.BytesIO(model_bytes)
-            model_state = torch.load(model_stream)
-        
-        model = copy.deepcopy(self.global_model)
-        model.load_state_dict(model_state)
-        model.to(self.device).eval()
-        return model
-
-
     def generate_incentive_explanation(self, shapley_values, incentives):
         # Explanation Text
         explanation = "Federated Learning Incentive Allocation Explanation\n"
@@ -467,3 +449,23 @@ class FederatedXAI:
         plot_buffers.append(buf3)
 
         return explanation, plot_buffers
+
+
+    def load_model(self, client_id, round_num, suffix):
+            """
+            Load a client's model based on the round number and suffix.
+
+            """
+            model_path = f'client/localModels/client_{client_id}_model_round_{round_num}{suffix}.pt'
+            model_bytes = self.file_handler.retrieve_file(self.training_id, model_path)
+            
+            if model_bytes:
+                model_stream = io.BytesIO(model_bytes)
+                model_state = torch.load(model_stream)
+            
+            model = copy.deepcopy(self.global_model)
+            model.load_state_dict(model_state)
+            model.to(self.device).eval()
+            return model
+        
+        

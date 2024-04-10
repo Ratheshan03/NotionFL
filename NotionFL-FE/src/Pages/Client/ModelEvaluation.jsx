@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../../Authcontext"; // Update this path to your actual auth context
+import "../../styles/page_styling.css";
 
 const DataCard = ({ title, content, type }) => {
   const renderContent = () => {
     switch (type) {
       case "json":
         return (
-          <pre className="text-white max-w-full overflow-x-auto">
-            {JSON.stringify(content, null, 2)}
+          <pre className="json-content">
+            {JSON.stringify(JSON.parse(content), null, 2)}
           </pre>
         );
       case "image":

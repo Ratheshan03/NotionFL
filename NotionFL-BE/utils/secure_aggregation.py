@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 import torch
@@ -5,18 +6,6 @@ import copy
 import psutil
 
 def perform_fedavg_aggregation(global_state_dict, client_state_dicts, client_weights):
-    """
-    Perform Federated Averaging aggregation using weights.
-
-    Args:
-        global_state_dict (OrderedDict): The state_dict of the global model to be updated.
-        client_state_dicts (list of OrderedDict): List of state_dicts from client models.
-        client_weights (list): List of weights for each client model based on the data size.
-
-    Returns:
-        OrderedDict: Updated state_dict for the global model.
-        dict: Aggregation time and estimated computational resources.
-    """
     if not client_state_dicts:
         raise ValueError("No client model state_dicts provided for aggregation.")
 
@@ -27,7 +16,8 @@ def perform_fedavg_aggregation(global_state_dict, client_state_dicts, client_wei
 
     # Aggregate each parameter
     for key in aggregated_state_dict.keys():
-        aggregated_state_dict[key] = sum(client_state_dict[key] * weight for client_state_dict, weight in zip(client_state_dicts, client_weights)) / sum(client_weights)
+        aggregated_state_dict[key] = sum(client_state_dict[key] * weight
+                for client_state_dict, weight in zip(client_state_dicts, client_weights)) / sum(client_weights)
 
     end_time = time.time()
     end_memory = psutil.virtual_memory()
@@ -40,21 +30,12 @@ def perform_fedavg_aggregation(global_state_dict, client_state_dicts, client_wei
             'memory_usage': memory_used,
         }
     }
+    logging.info(f"Aggregation time: {time_overheads['aggregation_time']}s")
 
     return aggregated_state_dict, time_overheads
 
 
 def average_model_states(base_model, model_states):
-    """
-    Average the state dictionaries of a list of models.
-
-    Args:
-        base_model (torch.nn.Module): The model whose structure we'll use for averaging.
-        model_states (list): List of state_dicts from different models.
-
-    Returns:
-        OrderedDict: Averaged state dictionary.
-    """
     averaged_state_dict = copy.deepcopy(base_model.state_dict())
     num_models = len(model_states)
 

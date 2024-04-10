@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useAuth } from "../../Authcontext"; // Make sure this path is correct for your auth context
+import { useAuth } from "../../Authcontext";
+import "../../styles/page_styling.css";
 
 const DataCard = ({ title, content, isJson }) => (
   <div className="bg-gray-700 p-4 rounded-lg shadow-sm mb-4 overflow-auto">
     <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
     {isJson ? (
-      <pre className="text-white max-w-full overflow-x-auto">{content}</pre>
+      <pre className="json-content">{content}</pre>
     ) : (
       <div className="text-white max-w-full overflow-x-auto">{content}</div>
     )}
@@ -70,7 +71,7 @@ const PrivacyAndSecurity = () => {
         );
       case "json":
         // Assuming the JSON data is already an object
-        return JSON.stringify(data, null, 2);
+        return JSON.stringify(JSON.parse(data), null, 2);
       case "text":
       default:
         return <p>{data}</p>;

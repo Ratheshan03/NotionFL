@@ -2,10 +2,10 @@ batch_size: 64
 clip_threshold: 1.0
 dataset: CIFAR10
 device: cpu
-epochs: 3
+epochs: 5
 eval_every_n_rounds: 1
-fl_rounds: 1
+fl_rounds: 2
 learning_rate: 0.01
 model: CIFAR10Model
 noise_multiplier: 0.1
-num_clients: 2
+num_clients: 5

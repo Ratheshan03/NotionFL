@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
-import logo from "../assets/banner.png";
+import logo from "../assets/NFL2.png";
 import heroImage from "../assets/bg-4.jpg";
 import learnMoreImage from "../assets/app.gif";
 import cardImageOne from "../assets/f1.png";
@@ -47,15 +47,14 @@ const Home = () => {
   return (
     <div className="bg-gradient-to-br from-blue-950 via-gray-900 to-black text-white">
       <NavBar isScrolled={isScrolled} />
-      {/* Hero Section */}
       <div
         className="relative min-h-screen bg-cover bg-center text-center flex flex-col justify-center items-center"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
         <div className="bg-gray-900 bg-opacity-50 w-full h-full absolute top-0 left-0"></div>
         <div className="z-10 p-4">
-          <h1 className="text-6xl text-white font-bold mb-8">NOTIONFL</h1>
-          <p className="text-xl text-white mb-12">
+          <img src={logo} alt="Logo" className="w-100 h-auto mb-4 mx-auto" />
+          <p className="text-2xl text-orange-400 mb-12">
             An Explainable Mediator for Trustworthy Cross-Silo Federated
             Learning
           </p>
@@ -66,7 +65,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Explanation Section */}
       <div className="flex flex-col md:flex-row items-center bg-dark-bg-color py-10 px-4 text-center">
         <img
           src={learnMoreImage}

@@ -11,7 +11,7 @@ from FL_Core.server import FLServer
 from models.model import MNISTModel, CIFAR10Model
 from utils.secure_aggregation import calculate_variance, perform_fedavg_aggregation
 from utils.privacy_module import apply_differential_privacy
-from utils.contribution_evaluation import calculate_shapley_values, calculate_federated_shapley_values 
+from utils.contribution_evaluation import calculate_shapley_values
 from utils.data_collector import DataCollector
 from utils.federated_xai import FederatedXAI
 from utils.allocate_incentive import allocate_incentives

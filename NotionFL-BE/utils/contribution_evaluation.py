@@ -60,7 +60,9 @@ def calculate_shapley_values(total_rounds, num_clients, client_models, global_mo
                         continue
 
                     # Retrieve models for each round in the current subset
-                    subset_models = [client_models[other_client_id][round_num] for other_client_id in subset if other_client_id in client_models and round_num in client_models[other_client_id]]
+                    subset_models = [client_models[other_client_id][round_num] 
+                                              for other_client_id in subset if other_client_id in 
+                                                                    client_models and round_num in client_models[other_client_id]]
 
                     if not subset_models:
                         continue

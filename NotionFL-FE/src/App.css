@@ -5,6 +5,27 @@
   text-align: center;
 }
 
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e1e24;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #5e81ac;
+  border-radius: 20px;
+  border: 3px solid #1e1e24;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #5e81ac #1e1e24;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -39,4 +60,28 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.json-content {
+  max-height: 300px; /* Adjust height as needed */
+  overflow-y: auto; /* Vertical scrolling */
+  white-space: pre-wrap; /* Handles the white spaces and new lines */
+  word-break: break-word; /* Ensures long strings don't overflow */
+}
+
+/* Styling for the scrollbar */
+.json-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.json-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.json-content::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.json-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

@@ -1,0 +1,37 @@
+.json-content {
+  max-height: 300px; /* Adjust height as needed */
+  overflow-y: auto; /* Vertical scrolling */
+  white-space: pre-wrap; /* Handles the white spaces and new lines */
+  word-break: break-word; /* Ensures long strings don't overflow */
+}
+
+/* Styling for the scrollbar */
+.json-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.json-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.json-content::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.json-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px; /* width of the entire scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e1e24; /* color of the tracking area */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #5e5c64; /* color of the scroll thumb */
+  border-radius: 20px; /* roundness of the scroll thumb */
+  border: 3px solid #1e1e24; /* creates padding around scroll thumb */
+}

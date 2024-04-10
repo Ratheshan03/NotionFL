@@ -17,19 +17,6 @@ cifar_transform = transforms.Compose([
 ])
 
 def get_data_loaders(dataset_name, batch_size=64, train_shuffle=True, test_shuffle=True):
-    """
-    Returns data loaders for the given dataset
-    
-    Args:
-        dataset_name (str) : Supported datasets are 'MNIST' and 'CIFAR10'
-        batch_size (int) : Number of data batches to train
-        train_shuffle (bool) : Whether to shuffle the training data
-        test_shuffle (bool) : Whether to shuffle the test data     
-    
-    Returns:
-        tuple: training_loader, test_loader
-    
-    """
     if dataset_name == 'MNIST':
         trainset = datasets.MNIST(root='./data', train=True, download=True, transform=mnist_transform)
         testset = datasets.MNIST(root='./data', train=False, download=True, transform=mnist_transform)
@@ -46,11 +33,6 @@ def get_data_loaders(dataset_name, batch_size=64, train_shuffle=True, test_shuff
     return train_loader, test_loader
 
 def split_client_data(dataset, num_clients, batch_size=64):
-    """
-        Splits dataset for multiple clients:
-        ensures data distribution remains uneven (reflecting real-world scenarios), 
-        all data points are still utilized and fairly distributed among clients.
-    """
     total_data_points = len(dataset)
     indices = torch.randperm(total_data_points).tolist()
     # Calculate split sizes for each client
@@ -65,3 +47,4 @@ def split_client_data(dataset, num_clients, batch_size=64):
         index += client_size
 
     return client_data_loaders
+

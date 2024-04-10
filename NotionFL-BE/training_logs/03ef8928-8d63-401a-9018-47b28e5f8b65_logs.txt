@@ -1,0 +1,233 @@
+2024-04-10 04:15:21,573 - INFO - 
+Training client 0 model...
+2024-04-10 04:15:40,455 - INFO - Epoch 1/5, Loss: 1.0979
+2024-04-10 04:15:58,272 - INFO - Epoch 2/5, Loss: 0.4703
+2024-04-10 04:16:16,256 - INFO - Epoch 3/5, Loss: 0.3935
+2024-04-10 04:16:32,962 - INFO - Epoch 4/5, Loss: 0.3386
+2024-04-10 04:16:47,738 - INFO - Epoch 5/5, Loss: 0.2976
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:16:52,901 - INFO - Training logs,plot for client_0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:16:52,902 - INFO - 
+Evaluating client 0 model...
+2024-04-10 04:16:56,650 - INFO - Test set: Loss: 0.1970, Accuracy: 0.9410, Precision: 0.9421, Recall: 0.9410, F1: 0.9409
+2024-04-10 04:16:56,652 - INFO - Confusion Matrix:
+[[ 964    0    0    2    0    3    5    1    5    0]
+ [   0 1116    3    3    0    0    3    1    9    0]
+ [  12    1  933    8   15    0    9   17   37    0]
+ [   0    1    9  944    0   20    0   15   19    2]
+ [   1    0    4    0  954    1    9    0    2   11]
+ [   6    2    1   29    4  819   10    2   14    5]
+ [  13    3    1    1   12   16  907    1    4    0]
+ [   1   10   17    2    8    0    0  981    1    8]
+ [   3    3    0   11    9    8    5   12  921    2]
+ [   7    8    0   13   73   10    1   17    9  871]]
+2024-04-10 04:16:58,625 - INFO - Evaluation logs for client_0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0
+2024-04-10 04:17:03,696 - INFO - Model for client_0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix ''
+2024-04-10 04:17:07,747 - INFO - Model update for client_0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:17:57,002 - INFO - Client model evaluation for client_0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:17:57,002 - INFO - 
+Adding differential privacy for client_0's round 0 model
+2024-04-10 04:18:00,451 - INFO - Model for client_0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix 'private'
+2024-04-10 04:22:40,500 - INFO - Generating DP explanation plot and text file for client model
+2024-04-10 04:24:33,486 - INFO - Privacy explanations for client 0, round 0, successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:24:40,129 - INFO - Final model for client_0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:24:40,131 - INFO - 
+Training client 1 model...
+2024-04-10 04:24:58,786 - INFO - Epoch 1/5, Loss: 0.3068
+2024-04-10 04:25:17,657 - INFO - Epoch 2/5, Loss: 0.2709
+2024-04-10 04:25:36,324 - INFO - Epoch 3/5, Loss: 0.2527
+2024-04-10 04:25:51,745 - INFO - Epoch 4/5, Loss: 0.2357
+2024-04-10 04:26:09,789 - INFO - Epoch 5/5, Loss: 0.2164
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:26:13,543 - INFO - Training logs,plot for client_1 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:26:13,544 - INFO - 
+Evaluating client 1 model...
+2024-04-10 04:26:21,662 - INFO - Test set: Loss: 0.1491, Accuracy: 0.9575, Precision: 0.9582, Recall: 0.9575, F1: 0.9575
+2024-04-10 04:26:21,664 - INFO - Confusion Matrix:
+[[ 975    0    0    0    0    1    2    1    1    0]
+ [   0 1123    4    2    0    0    4    0    2    0]
+ [  20    0  978    2    4    0    9   10    9    0]
+ [   4    0   10  969    0    5    0   11    9    2]
+ [   2    1    2    0  957    0    9    1    1    9]
+ [  15    1    1   19    2  832   11    1    5    5]
+ [  22    3    1    1    4    5  921    0    1    0]
+ [   3    6   18    0    3    0    0  990    1    7]
+ [  22    4    6    7    6    4    9   11  902    3]
+ [  14    7    1   12   31    2    0   11    3  928]]
+2024-04-10 04:26:23,950 - INFO - Evaluation logs for client_1 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0
+2024-04-10 04:26:27,570 - INFO - Model for client_1 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix ''
+2024-04-10 04:26:30,623 - INFO - Model update for client_1 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:27:23,350 - INFO - Client model evaluation for client_1 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:27:23,350 - INFO - 
+Adding differential privacy for client_1's round 0 model
+2024-04-10 04:27:26,284 - INFO - Model for client_1 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix 'private'
+2024-04-10 04:30:34,019 - INFO - Generating DP explanation plot and text file for client model
+2024-04-10 04:31:20,886 - INFO - Privacy explanations for client 1, round 0, successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:31:23,846 - INFO - Final model for client_1 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:31:23,851 - INFO - 
+Training client 2 model...
+2024-04-10 04:31:36,855 - INFO - Epoch 1/5, Loss: 0.2124
+2024-04-10 04:31:52,521 - INFO - Epoch 2/5, Loss: 0.1965
+2024-04-10 04:32:09,482 - INFO - Epoch 3/5, Loss: 0.1821
+2024-04-10 04:32:26,635 - INFO - Epoch 4/5, Loss: 0.1656
+2024-04-10 04:32:43,719 - INFO - Epoch 5/5, Loss: 0.1578
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:32:47,217 - INFO - Training logs,plot for client_2 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:32:47,219 - INFO - 
+Evaluating client 2 model...
+2024-04-10 04:32:54,842 - INFO - Test set: Loss: 0.0985, Accuracy: 0.9685, Precision: 0.9685, Recall: 0.9685, F1: 0.9685
+2024-04-10 04:32:54,843 - INFO - Confusion Matrix:
+[[ 971    0    0    1    0    1    5    1    1    0]
+ [   0 1123    2    2    0    0    4    1    3    0]
+ [   9    1  986    7    3    0    5    9   12    0]
+ [   0    0    2  982    0   12    0    7    7    0]
+ [   1    1    3    0  961    0    6    1    2    7]
+ [   2    1    0    6    0  869    7    2    3    2]
+ [   8    3    1    0    5   11  930    0    0    0]
+ [   1    5   17    4    3    0    1  979    0   18]
+ [   5    1    3   12    5    8    6    4  923    7]
+ [   8    5    0    9   17    2    1    5    1  961]]
+2024-04-10 04:32:56,853 - INFO - Evaluation logs for client_2 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0
+2024-04-10 04:33:00,408 - INFO - Model for client_2 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix ''
+2024-04-10 04:33:04,046 - INFO - Model update for client_2 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:33:52,815 - INFO - Client model evaluation for client_2 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:33:52,815 - INFO - 
+Adding differential privacy for client_2's round 0 model
+2024-04-10 04:33:55,905 - INFO - Model for client_2 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix 'private'
+2024-04-10 04:39:08,619 - INFO - Generating DP explanation plot and text file for client model
+2024-04-10 04:40:57,043 - INFO - Privacy explanations for client 2, round 0, successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:41:02,190 - INFO - Final model for client_2 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:41:02,194 - INFO - 
+Training client 3 model...
+2024-04-10 04:41:20,093 - INFO - Epoch 1/5, Loss: 0.1773
+2024-04-10 04:41:37,865 - INFO - Epoch 2/5, Loss: 0.1605
+2024-04-10 04:41:55,670 - INFO - Epoch 3/5, Loss: 0.1520
+2024-04-10 04:42:13,259 - INFO - Epoch 4/5, Loss: 0.1418
+2024-04-10 04:42:30,663 - INFO - Epoch 5/5, Loss: 0.1277
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:42:34,133 - INFO - Training logs,plot for client_3 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:42:34,138 - INFO - 
+Evaluating client 3 model...
+2024-04-10 04:42:41,650 - INFO - Test set: Loss: 0.0782, Accuracy: 0.9760, Precision: 0.9760, Recall: 0.9760, F1: 0.9760
+2024-04-10 04:42:41,651 - INFO - Confusion Matrix:
+[[ 971    0    2    1    0    0    3    1    2    0]
+ [   0 1130    2    1    0    0    1    0    1    0]
+ [   5    4 1006    2    3    0    2    7    3    0]
+ [   0    0    4  991    0    3    0    5    7    0]
+ [   1    0    2    0  955    0    8    1    2   13]
+ [   4    0    1    9    0  867    5    1    4    1]
+ [   8    3    1    1    3    2  937    0    3    0]
+ [   1    8   17    1    1    0    0  996    1    3]
+ [   5    1    4    7    4    2    1    5  940    5]
+ [   5    7    0    9    8    0    1    7    5  967]]
+2024-04-10 04:42:43,821 - INFO - Evaluation logs for client_3 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0
+2024-04-10 04:42:47,456 - INFO - Model for client_3 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix ''
+2024-04-10 04:42:50,560 - INFO - Model update for client_3 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:43:42,644 - INFO - Client model evaluation for client_3 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:43:42,644 - INFO - 
+Adding differential privacy for client_3's round 0 model
+2024-04-10 04:43:46,711 - INFO - Model for client_3 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix 'private'
+2024-04-10 04:46:42,891 - INFO - Generating DP explanation plot and text file for client model
+2024-04-10 04:47:29,640 - INFO - Privacy explanations for client 3, round 0, successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:47:32,635 - INFO - Final model for client_3 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:47:32,637 - INFO - 
+Training client 4 model...
+2024-04-10 04:47:42,860 - INFO - Epoch 1/5, Loss: 0.1513
+2024-04-10 04:47:53,547 - INFO - Epoch 2/5, Loss: 0.1350
+2024-04-10 04:48:03,990 - INFO - Epoch 3/5, Loss: 0.1226
+2024-04-10 04:48:14,760 - INFO - Epoch 4/5, Loss: 0.1135
+2024-04-10 04:48:24,865 - INFO - Epoch 5/5, Loss: 0.1111
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:48:28,467 - INFO - Training logs,plot for client_4 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:48:28,469 - INFO - 
+Evaluating client 4 model...
+2024-04-10 04:48:35,109 - INFO - Test set: Loss: 0.0659, Accuracy: 0.9788, Precision: 0.9788, Recall: 0.9788, F1: 0.9788
+2024-04-10 04:48:35,110 - INFO - Confusion Matrix:
+[[ 974    0    0    0    0    0    2    1    3    0]
+ [   0 1125    2    2    0    0    4    0    2    0]
+ [   8    4  999    4    3    0    3    8    3    0]
+ [   0    0    1  996    0    5    0    2    2    4]
+ [   1    0    1    0  961    0    6    1    2   10]
+ [   2    0    0    5    0  875    5    1    3    1]
+ [   7    3    0    1    3    2  941    0    1    0]
+ [   1    2    8    2    0    0    0 1002    2   11]
+ [   5    1    2    6    6    8    2    5  932    7]
+ [   3    4    0    6    5    1    0    6    1  983]]
+2024-04-10 04:48:37,091 - INFO - Evaluation logs for client_4 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0
+2024-04-10 04:48:39,941 - INFO - Model for client_4 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix ''
+2024-04-10 04:48:43,607 - INFO - Model update for client_4 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 04:49:51,636 - INFO - Client model evaluation for client_4 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:49:51,636 - INFO - 
+Adding differential privacy for client_4's round 0 model
+2024-04-10 04:49:54,443 - INFO - Model for client_4 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65, round 0, with suffix 'private'
+2024-04-10 04:54:21,129 - INFO - Generating DP explanation plot and text file for client model
+2024-04-10 04:56:09,457 - INFO - Privacy explanations for client 4, round 0, successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:56:14,267 - INFO - Final model for client_4 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:56:16,269 - INFO - Differential privacy logs for round 0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 04:56:16,326 - INFO - Performing Secure Aggregation for round: 0
+2024-04-10 05:00:13,980 - INFO - Aggregation explanation plot for round 0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 05:00:46,024 - INFO - Secure aggregation logs for round 0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 05:00:46,025 - INFO - Updating client model with new global state after aggregation
+Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+2024-04-10 05:01:03,811 - INFO - Global model metrics for round 0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 05:01:07,683 - INFO - Global model for round 0 successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 05:01:54,708 - INFO - Global model shap plot successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 05:02:06,277 - INFO - Final Global model successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 05:19:58,253 - INFO - Contribution metrics and plot successfully saved in cloud storage
+2024-04-10 05:19:58,270 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 05:19:58,271 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 05:20:02,406 - INFO - Incentives JSON and plot successfully saved in cloud storage
+2024-04-10 05:20:02,424 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 05:20:02,425 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 05:20:09,218 - INFO - Incentive explanation text and plots successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 05:20:43,513 - INFO - Global model evaluation successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+2024-04-10 05:33:28,596 - INFO - Model comparison details and plots successfully saved in cloud storage under training ID 03ef8928-8d63-401a-9018-47b28e5f8b65
+
+FL Training Round 1/1
+variance before aggregation 1.507041375741028
+variance after aggregation 0.0
+Pre-aggregation accuracy 0.9788
+Post-aggregation accuracy 0.2719
+performance_difference -0.7069000000000001
+Evaluating global model performance at round 1
+Global Model Test set: Average loss: 2.3003, Accuracy: 0.2719
+Precision: 0.1660, Recall: 0.2719, F1 Score: 0.1782
+Confusion Matrix:
+[[   0   48    0    0    0    0    0    0  932    0]
+ [   0 1124    0    0    0    0    0    0   11    0]
+ [   0  407    0    0    0    0    0    0  625    0]
+ [   0   94    0    0    0   10    0    0  906    0]
+ [   0  159    0    0    0    0    0    0  823    0]
+ [   0    5    0    0    0  622    0    0  265    0]
+ [   0    8    0    0    0    0    0    0  950    0]
+ [   0   90    0    0    0    0    0    0  938    0]
+ [   0    1    0    0    0    0    0    0  973    0]
+ [   0    8    0    0    0    1    0    0 1000    0]]
+Shapley Values for the Training: {0: 0.12924999999999998, 1: 0.13589166666666666, 2: 0.1414583333333334, 3: 0.14489166666666664, 4: 0.14650833333333335}
+Global Model Test set: Average loss: 2.3003, Accuracy: 0.2719
+Precision: 0.1660, Recall: 0.2719, F1 Score: 0.1782
+Confusion Matrix:
+[[   0   48    0    0    0    0    0    0  932    0]
+ [   0 1124    0    0    0    0    0    0   11    0]
+ [   0  407    0    0    0    0    0    0  625    0]
+ [   0   94    0    0    0   10    0    0  906    0]
+ [   0  159    0    0    0    0    0    0  823    0]
+ [   0    5    0    0    0  622    0    0  265    0]
+ [   0    8    0    0    0    0    0    0  950    0]
+ [   0   90    0    0    0    0    0    0  938    0]
+ [   0    1    0    0    0    0    0    0  973    0]
+ [   0    8    0    0    0    1    0    0 1000    0]]
+Dimension mismatch for client 0: Global SHAP (501760,), Client SHAP (50176,)
+Dimension mismatch for client 1: Global SHAP (501760,), Client SHAP (50176,)
+Dimension mismatch for client 2: Global SHAP (501760,), Client SHAP (50176,)
+Dimension mismatch for client 3: Global SHAP (501760,), Client SHAP (50176,)
+Dimension mismatch for client 4: Global SHAP (501760,), Client SHAP (50176,)
+An error occurred while updating training status: You have not defined a default connection

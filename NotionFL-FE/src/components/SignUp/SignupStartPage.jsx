@@ -11,6 +11,10 @@ const SignupStartPage = () => {
     navigate(`/signup/${role}`);
   };
 
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
+
   const cardStyle = {
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: "cover",
@@ -18,7 +22,7 @@ const SignupStartPage = () => {
     backgroundPosition: "center",
     backdropFilter: "blur(8px)",
     WebkitBackdropFilter: "blur(8px)",
-    height: "60vh",
+    height: "70vh",
     width: "85vw",
   };
 
@@ -69,6 +73,17 @@ const SignupStartPage = () => {
               learning models
             </p>
           </div>
+        </div>
+        <div className="mt-8 text-center">
+          <p>
+            Already a member?{" "}
+            <span
+              onClick={handleLoginClick}
+              className="text-blue-300 cursor-pointer hover:underline"
+            >
+              Log in
+            </span>
+          </p>
         </div>
       </div>
     </div>

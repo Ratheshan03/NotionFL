@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useAuth } from "../../Authcontext"; // Update this path to your actual auth context
+import { useAuth } from "../../Authcontext";
+import "../../styles/page_styling.css";
 
 const DataCard = ({ title, content }) => (
   <div className="bg-gray-700 p-4 rounded-lg shadow-sm mb-4 overflow-auto">
@@ -11,7 +12,7 @@ const DataCard = ({ title, content }) => (
 
 const ClientView = () => {
   const [trainingSessions, setTrainingSessions] = useState([]);
-  const [clientCounts, setClientCounts] = useState({}); // Object to hold the count of clients per training session
+  const [clientCounts, setClientCounts] = useState({});
   const [selectedTrainingId, setSelectedTrainingId] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedRoundNum, setSelectedRoundNum] = useState("");
@@ -27,7 +28,7 @@ const ClientView = () => {
           `http://localhost:5000/training/training_sessions/${userId}`
         );
         console.log(data);
-        processTrainingSessions(data); // Process the response to extract necessary details
+        processTrainingSessions(data);
       } catch (error) {
         console.error("Error fetching training sessions:", error);
       }
@@ -77,7 +78,11 @@ const ClientView = () => {
     } else if (type === "text") {
       return <p>{data}</p>;
     } else if (type === "json") {
-      return <pre>{JSON.stringify(data, null, 2)}</pre>;
+      return (
+        <pre className="json-content">
+          {JSON.stringify(JSON.parse(data), null, 2)}
+        </pre>
+      );
     }
     return <p>Data not available</p>;
   };

@@ -11,6 +11,9 @@ class FLServer:
         
     def set_global_model_state(self, state_dict):
         self.global_model.load_state_dict(state_dict)
+        
+    def get_global_model(self):
+            return self.global_model
 
     def aggregate_client_updates(self, client_updates, aggregation_method='average'):
         """

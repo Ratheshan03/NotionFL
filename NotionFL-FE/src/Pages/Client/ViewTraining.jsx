@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../../Authcontext";
-import "../../styles/page_styling.css";
 
 const DataCard = ({ title, content, type }) => {
   const renderContent = () => {
     if (type === "json") {
       // JSON data will be formatted in a scrollable preformatted block
       return (
-        <pre className="json-content">
+        <pre className="text-white max-w-full overflow-x-auto">
           {JSON.stringify(JSON.parse(content), null, 2)}
         </pre>
       );

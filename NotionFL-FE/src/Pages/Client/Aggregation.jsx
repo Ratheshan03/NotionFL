@@ -68,7 +68,6 @@ const Aggregation = () => {
           const response = await axios.get(
             `http://localhost:5000/client/get_aggregation_data/${training_id}/${client_id}/${selectedRoundNum}`
           );
-          console.log(response);
           setAggregationData(response.data);
         } catch (error) {
           console.error("Error fetching training data:", error);

@@ -1,0 +1,187 @@
+2024-04-10 19:41:42,588 - INFO - 
+Training client 0 model...
+2024-04-10 19:42:41,785 - INFO - Epoch 1/3, Loss: 2.3013
+2024-04-10 19:43:39,931 - INFO - Epoch 2/3, Loss: 2.2947
+2024-04-10 19:45:18,616 - INFO - Epoch 3/3, Loss: 2.2533
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 19:45:22,932 - INFO - Training logs,plot for client_0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 19:45:22,936 - INFO - 
+Evaluating client 0 model...
+Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+2024-04-10 19:45:43,367 - INFO - Test set: Loss: 2.1713, Accuracy: 0.2112, Precision: 0.2068, Recall: 0.2112, F1: 0.1621
+2024-04-10 19:45:43,368 - INFO - Confusion Matrix:
+[[ 65  10   0   0  38  22  91 144 212 418]
+ [  2  64   0   0   9  51 278  27  20 549]
+ [ 27  16   0   0  85  38 348 165  63 258]
+ [ 15  31   0   0 115 100 389 110  35 205]
+ [  7  22   0   0 162  36 399 114  28 232]
+ [  2  39   0   0 126 187 284 126  45 191]
+ [  5  27   0   0  53  41 516  94  17 247]
+ [  3  32   0   0 105  81 247 226  25 281]
+ [  6  21   0   0  25  60  79  38 151 620]
+ [  0  31   0   0   4  14 146  42  22 741]]
+2024-04-10 19:45:45,197 - INFO - Evaluation logs for client_0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf, round 0
+2024-04-10 19:45:55,141 - INFO - Model for client_0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf, round 0, with suffix ''
+2024-04-10 19:46:01,199 - INFO - Model update for client_0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 19:47:27,291 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,322 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,350 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,604 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,635 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,658 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,688 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,713 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,745 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,765 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,798 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,826 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,859 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 19:47:27,885 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 19:47:35,196 - INFO - Client model evaluation for client_0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 19:47:35,196 - INFO - 
+Adding differential privacy for client_0's round 0 model
+2024-04-10 19:47:42,192 - INFO - Model for client_0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf, round 0, with suffix 'private'
+2024-04-10 19:54:49,294 - INFO - Generating DP explanation plot and text file for client model
+2024-04-10 20:06:38,973 - INFO - Privacy explanations for client 0, round 0, successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:06:46,911 - INFO - Final model for client_0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:06:46,944 - INFO - 
+Training client 1 model...
+2024-04-10 20:09:50,988 - INFO - Epoch 1/3, Loss: 2.1310
+2024-04-10 20:12:30,878 - INFO - Epoch 2/3, Loss: 2.0056
+2024-04-10 20:14:24,151 - INFO - Epoch 3/3, Loss: 1.9007
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 20:14:28,237 - INFO - Training logs,plot for client_1 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:14:28,242 - INFO - 
+Evaluating client 1 model...
+2024-04-10 20:14:42,749 - INFO - Test set: Loss: 1.7887, Accuracy: 0.3470, Precision: 0.3488, Recall: 0.3470, F1: 0.3121
+2024-04-10 20:14:42,757 - INFO - Confusion Matrix:
+[[550  58   4   7   4   8  33  81 170  85]
+ [ 62 360   0  36   0   5  84  27 160 266]
+ [142  31  21  28  94  49 353 213  22  47]
+ [ 70  53   7  94  33 124 335 194  10  80]
+ [ 58  18   9  26 126  74 438 194  14  43]
+ [ 63  35  11  87  59 225 264 204  15  37]
+ [ 27  15   5  24  23  42 670 135   2  57]
+ [ 60  29   3  53  43  80 144 502   9  77]
+ [247 101   3  19   1  22  14  28 395 170]
+ [ 53 142   0  21   0   2  75  44 136 527]]
+2024-04-10 20:14:43,843 - INFO - Evaluation logs for client_1 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf, round 0
+2024-04-10 20:14:54,058 - INFO - Model for client_1 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf, round 0, with suffix ''
+2024-04-10 20:15:03,578 - INFO - Model update for client_1 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:17:04,698 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:04,812 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:04,883 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:04,973 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,021 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,119 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,182 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,242 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,323 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,389 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,494 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,558 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,659 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:17:05,743 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 20:17:18,635 - INFO - Client model evaluation for client_1 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:17:18,647 - INFO - 
+Adding differential privacy for client_1's round 0 model
+2024-04-10 20:17:23,799 - INFO - Model for client_1 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf, round 0, with suffix 'private'
+2024-04-10 20:31:00,415 - INFO - Generating DP explanation plot and text file for client model
+2024-04-10 20:42:23,135 - INFO - Privacy explanations for client 1, round 0, successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:42:31,232 - INFO - Final model for client_1 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:42:32,975 - INFO - Differential privacy logs for round 0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:42:33,056 - INFO - Performing Secure Aggregation for round: 0
+2024-04-10 20:42:33,098 - INFO - Aggregation time: 0.031651973724365234s
+2024-04-10 20:54:01,608 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:54:01,619 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:54:01,622 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:54:05,708 - INFO - Aggregation explanation plot for round 0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:54:35,287 - INFO - Secure aggregation logs for round 0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:54:35,287 - INFO - Updating client model with new global state after aggregation
+Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+2024-04-10 20:54:50,749 - INFO - Global model metrics for round 0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:54:57,278 - INFO - Global model for round 0 successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:55:55,911 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:55,947 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:55,978 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,007 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,036 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,065 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,090 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,120 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,147 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,175 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,204 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,230 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,255 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:55:56,282 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 20:56:01,696 - INFO - Global model shap plot successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:56:13,722 - INFO - Final Global model successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 20:58:29,515 - INFO - Contribution metrics and plot successfully saved in cloud storage
+2024-04-10 20:58:29,526 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 20:58:29,526 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 20:58:33,489 - INFO - Incentives JSON and plot successfully saved in cloud storage
+2024-04-10 20:58:33,498 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 20:58:33,499 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-04-10 20:58:41,638 - INFO - Incentive explanation text and plots successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+2024-04-10 20:59:33,206 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,228 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,246 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,264 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,282 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,299 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,316 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,332 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,349 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,365 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,380 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,397 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,417 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+2024-04-10 20:59:33,431 - WARNING - Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+FigureCanvasAgg is non-interactive, and thus cannot be shown
+2024-04-10 20:59:40,997 - INFO - Global model evaluation successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+2024-04-10 21:18:02,088 - INFO - Model comparison details and plots successfully saved in cloud storage under training ID c91c8785-48d2-41b9-a910-0b351ad642bf
+Files already downloaded and verified
+Files already downloaded and verified
+
+FL Training Round 1/1
+variance before aggregation 0.6905059266719036
+variance after aggregation 0.0
+Pre-aggregation accuracy 0.347
+Post-aggregation accuracy 0.1
+performance_difference -0.24699999999999997
+Evaluating global model performance at round 1
+Global Model Test set: Average loss: 2.3045, Accuracy: 0.1000
+Precision: 0.0100, Recall: 0.1000, F1 Score: 0.0182
+Confusion Matrix:
+[[1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]]
+Shapley Values for the Training: {0: 0.030600000000000002, 1: 0.1664}
+Global Model Test set: Average loss: 2.3045, Accuracy: 0.1000
+Precision: 0.0100, Recall: 0.1000, F1 Score: 0.0182
+Confusion Matrix:
+[[1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]
+ [1000    0    0    0    0    0    0    0    0    0]]
+Dimension mismatch for client 0: Global SHAP (1966080,), Client SHAP (196608,)
+Dimension mismatch for client 1: Global SHAP (1966080,), Client SHAP (196608,)
+An error occurred while updating training status: You have not defined a default connection

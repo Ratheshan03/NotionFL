@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../../Authcontext";
 
-const DataCard = ({ title, content, isJson, isImage }) => (
+const DataCard = ({ title, content, isJson, isImage, isModel }) => (
   <div className="bg-gray-700 p-4 rounded-lg shadow-sm mb-4 overflow-auto">
     <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
     {isJson && (
@@ -15,7 +15,12 @@ const DataCard = ({ title, content, isJson, isImage }) => (
         className="w-full h-auto"
       />
     )}
-    {!isJson && !isImage && (
+    {isModel && (
+      <div className="text-white max-w-full overflow-x-auto">
+        Model file ready to download
+      </div>
+    )}
+    {!isJson && !isImage && !isModel && (
       <div className="text-white max-w-full overflow-x-auto">{content}</div>
     )}
   </div>
@@ -53,7 +58,6 @@ const GlobalModels = () => {
           const response = await axios.get(
             `http://localhost:5000/server/global_model_data/${selectedTrainingId}`
           );
-          console.log(response);
           setGlobalData(response.data);
         } catch (error) {
           console.error("Error fetching global model data:", error);
@@ -66,39 +70,32 @@ const GlobalModels = () => {
     fetchGlobalModelData();
   }, [selectedTrainingId]);
 
-  const downloadGlobalModel = () => {
-    if (globalData && globalData.final_global_model) {
-      // Assuming the final_global_model is a base64 string without the prefix `data:application/octet-stream;base64,`
-      const base64 = globalData.final_global_model;
-      const byteCharacters = atob(base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const fileBlob = new Blob([byteArray], {
-        type: "application/octet-stream",
-      });
-      const blobUrl = URL.createObjectURL(fileBlob);
-
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = `Global_Model_${selectedTrainingId}.pt`;
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(blobUrl); // Clean up the URL object
-      document.body.removeChild(link);
+  const downloadFile = (base64, fileName, mimeType) => {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
+    const byteArray = new Uint8Array(byteNumbers);
+    const fileBlob = new Blob([byteArray], { type: mimeType });
+    const blobUrl = URL.createObjectURL(fileBlob);
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(blobUrl);
+    document.body.removeChild(link);
   };
 
-  const renderDataContent = (data, type) => {
-    if (type === "image" && data) {
-      const base64String = `data:image/png;base64,${data}`;
-      return (
-        <img src={base64String} alt="Data Plot" className="w-full h-auto" />
+  const downloadGlobalModel = () => {
+    if (globalData && globalData.final_global_model) {
+      downloadFile(
+        globalData.final_global_model,
+        `Global_Model_${selectedTrainingId}.pt`,
+        "application/octet-stream"
       );
-    } else {
-      return <p>{data}</p>;
     }
   };
 
@@ -135,19 +132,18 @@ const GlobalModels = () => {
               />
               <DataCard
                 title="Global Model Confusion Matrix"
-                content={renderDataContent(
-                  globalData.global_model_cmatrix,
-                  "image"
-                )}
+                content={globalData.global_model_cmatrix}
                 isImage={true}
               />
               <DataCard
                 title="Global SHAP Values Plot"
-                content={renderDataContent(
-                  globalData.global_model_shap_plot,
-                  "image"
-                )}
+                content={globalData.global_model_shap_plot}
                 isImage={true}
+              />
+              <DataCard
+                title="Final Global Model"
+                content="Model file ready to download"
+                isModel={true}
               />
 
               <button

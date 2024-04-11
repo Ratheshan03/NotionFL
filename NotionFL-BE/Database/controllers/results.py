@@ -65,47 +65,26 @@ def get_global_data(training_id):
     file_handler = FileHandler()
     
     data_types = {
-        "global_model_cmatrix": f"FedXAIEvaluation/globals/final_confusion_matrix.png",
-        "global_model_eval": f"FedXAIEvaluation/globals/final_evaluation.txt",
-        "global_model_shap_plot": f"FedXAIEvaluation/globals/final_shap_plot.png",
+        "global_model_cmatrix": "FedXAIEvaluation/globals/final_confusion_matrix.png",
+        "global_model_eval": "FedXAIEvaluation/globals/final_evaluation.txt",
+        "global_model_shap_plot": "FedXAIEvaluation/globals/final_shap_plot.png",
+        "final_global_model": "global/models/final_global_model.pt"
     }
-    
-    # Initially, you don't have the final global model path,
-    global_model_prefix = "global/models/global_model_round_"
-    global_model_suffix = ".pt"
-    
-    # Get a list of all 
-    global_model_files = file_handler.list_files(f"{training_id}/global/models/")
-    
-    # Filter out the files
-    round_numbers = [
-        int(re.search(rf"{global_model_prefix}(\d+){global_model_suffix}", file_path).group(1))
-        for file_path in global_model_files
-        if re.match(rf"{global_model_prefix}\d+{global_model_suffix}", file_path)
-    ]
-    
-    if round_numbers:
-        highest_round_num = max(round_numbers)
-        final_global_model_path = f"{global_model_prefix}{highest_round_num}{global_model_suffix}"
-    else:
-        final_global_model_path = "Not available"
-    
-    
-    if final_global_model_path != "Not available":
-        data_types["final_global_model"] = final_global_model_path
-    
-    privacy_data = {}
+
+    global_model_data = {}
     for data_type, cloud_path in data_types.items():
         file_content = file_handler.retrieve_file(training_id, cloud_path)
         if file_content is not None:
-            if cloud_path.endswith(".png"):
-                privacy_data[data_type] = base64.b64encode(file_content).decode('utf-8')
+            if cloud_path.endswith(".png") or cloud_path.endswith(".pt"):
+                global_model_data[data_type] = base64.b64encode(file_content).decode('utf-8')
             else:
-                privacy_data[data_type] = file_content
+                # Directly store other file types like .txt
+                global_model_data[data_type] = file_content
         else:
-            privacy_data[data_type] = "Not available"
+            global_model_data[data_type] = "Not available"
 
-    return privacy_data
+    return global_model_data
+
 
 
 #  Client Results Route Helper Functions

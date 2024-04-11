@@ -4,6 +4,8 @@ __pycache__
 /output
 *.pth
 /data
+/tests/data
+
 
 # Ignore compiled binaries
 *.exe

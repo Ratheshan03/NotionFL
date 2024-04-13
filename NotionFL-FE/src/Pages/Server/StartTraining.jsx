@@ -99,18 +99,32 @@ const StartTraining = () => {
   }, []);
 
   // Tailwind CSS classes
-  const selectClass =
-    "block w-full mt-1 bg-white/30 backdrop-filter backdrop-blur-lg border border-white/50 text-white rounded-md shadow-sm px-4 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50";
-  const labelClass = "block text-sm font-medium text-white";
-  const buttonClass =
-    "w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-800 to-blue-950 hover:from-blue-800 hover:to-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
+  // Updated Tailwind CSS classes for improved styling
+  const selectClass = `
+  block w-full mt-1 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm 
+  focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 
+  transition duration-300 ease-in-out transform hover:scale-105
+`;
 
+  const labelClass = `
+  block text-sm font-medium text-white
+`;
+
+  const buttonClass = `
+  mt-6 w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium 
+  rounded-md text-white bg-gradient-to-r from-blue-800 to-blue-900 hover:bg-gradient-to-l 
+  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg
+`;
+
+  const formClass = `
+  space-y-6 w-full md:w-3/4 lg:w-1/2 mx-auto
+`;
   return (
-    <div className="max-w-2xl mx-auto my-10 p-6 bg-gradient-to-br from-blue-950 via-gray-900 to-black shadow-md rounded-md">
-      <h2 className="text-2xl font-semibold text-white mb-6">
+    <div className="max-w-4xl mx-auto my-10 p-8 bg-gradient-to-br from-blue-950 via-gray-900 to-black shadow-xl rounded-xl">
+      <h2 className="text-3xl font-semibold text-center text-white mb-8">
         Start Federated Learning Training
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className={formClass}>
         <div>
           <label className={labelClass}>Dataset</label>
           <select

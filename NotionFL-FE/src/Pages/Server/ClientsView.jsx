@@ -132,8 +132,10 @@ const ClientView = () => {
           >
             <option value="">Select Round</option>
             {/* Example: You can hardcode or dynamically populate these options */}
-            <option value="1">Round 1</option>
-            <option value="2">Round 2</option>
+            <option value="0">Round 1</option>
+            <option value="1">Round 2</option>
+            <option value="2">Round 3</option>
+            <option value="3">Round 4</option>
             {/* ... */}
           </select>
         </div>

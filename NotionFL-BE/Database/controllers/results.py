@@ -17,8 +17,8 @@ def get_client_training_data(training_id, client_id, round):
     data_types = {
         "eval_logs": f"client/evaluation/client_{client_id}_evaluation_logs_round_{round}.json",
         "training_logs": f"client/training/client_{client_id}_training_logs.json",
-        "eval_plot": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot.png",
-        "eval_text": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/evaluation.txt",
+        "eval_plot": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/shap_plot_{round}.png",
+        "eval_text": f"FedXAIEvaluation/clients/client_{client_id}/evaluation/evaluation_{round}.txt",
     }
 
     training_data = {}
